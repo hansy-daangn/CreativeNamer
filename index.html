@@ -19,7 +19,12 @@
     -webkit-font-smoothing:antialiased;line-height:1.5;}
   .mono{font-family:ui-monospace,"D2Coding",Consolas,monospace;}
   header{position:sticky;top:0;z-index:5;background:rgba(245,246,248,.9);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line);}
-  .head{max-width:720px;margin:0 auto;padding:18px 22px;font-size:18px;font-weight:800;text-align:center;}
+  .head{max-width:720px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .brand{font-size:18px;font-weight:800;}
+  .hnav{display:flex;align-items:center;gap:12px;}
+  .hlink{font-size:13px;color:var(--mut);cursor:pointer;text-decoration:none;white-space:nowrap;font-family:inherit;}
+  .hlink:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
+  .hnav .sep{color:var(--line);font-size:12px;}
   main{max-width:720px;margin:0 auto;padding:22px 22px 190px;}
 
   .warn{display:none;background:#FFE8E8;color:#B30000;padding:12px 16px;text-align:center;font-size:13.5px;border-bottom:1px solid #F5C2C2;line-height:1.55;}
@@ -30,10 +35,6 @@
     padding:20px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(255,111,15,.18);}
   .pick:hover{background:#EA6300;}
   .pick .sub{display:block;font-size:12.5px;font-weight:600;opacity:.85;margin-top:4px;}
-
-  .permrow{display:flex;gap:8px;margin-top:8px;}
-  .minibtn{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 10px;font-size:12.5px;font-weight:600;color:var(--chipInk);cursor:pointer;font-family:inherit;}
-  .minibtn:hover{background:#F0F1F4;}
 
   .files{margin:14px 0 0;}
   .files .hd{display:flex;align-items:center;margin-bottom:8px;}
@@ -92,13 +93,16 @@
 </head>
 <body>
 <div id="warn" class="warn">⚠️ 이 브라우저에서는 파일 이름 변경이 동작하지 않습니다. <b>Chrome</b> 또는 <b>Microsoft Edge</b> 최신 버전으로 접속해 주세요. (File System Access API 필요)</div>
-<header><div class="head">파일명 일괄 변경기</div></header>
+<header><div class="head">
+  <span class="brand">파일명 일괄 변경기</span>
+  <nav class="hnav">
+    <a id="grantQuick" class="hlink">한 번에 모든 폴더권한 허용</a>
+    <span class="sep">|</span>
+    <a id="grantCustom" class="hlink">직접 폴더권한 허용</a>
+  </nav>
+</div></header>
 <main>
   <button id="pick" class="pick">＋ 파일 선택<span class="sub">또는 파일을 이 화면에 드래그앤드롭</span></button>
-  <div class="permrow">
-    <button id="grantQuick" class="minibtn">📁 한 번에 폴더 권한 허용</button>
-    <button id="grantCustom" class="minibtn">작업폴더 직접 지정</button>
-  </div>
 
   <div class="files">
     <div class="hd"><button class="t" id="filesT" type="button">▸ 선택된 파일 0</button><button id="clr" class="clr" style="display:none">모두 지우기</button></div>
