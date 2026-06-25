@@ -5,9 +5,11 @@
 
 원본 도구(`renamer.bat` + `renamer.ps1`, PowerShell 로컬 서버 방식)를 **브라우저 단독으로 동작하는 순수 웹앱**으로 재구성한 버전입니다.
 
+**접속 주소:** https://hansy-daangn.github.io/CreativeNamer/
+
 ## 사용법
 
-1. (배포 후) 사이트 주소로 접속합니다. 예: `https://hansy-daangn.github.io/creativenamer/`
+1. 위 사이트 주소로 접속합니다.
 2. **＋ 파일 선택** 버튼을 누르거나, 파일을 화면에 **드래그앤드롭**합니다.
    - 처음 추가할 때 브라우저가 "파일 수정 허용?"을 **한 번** 물어봅니다. 허용하면 이후엔 추가로 묻지 않습니다.
 3. 구분 / 서비스 / 소재명 등을 선택·입력하면 하단 미리보기에 새 파일명이 표시됩니다.
@@ -28,10 +30,4 @@
 ## 배포 (GitHub Pages)
 
 이 저장소에는 `.github/workflows/deploy-pages.yml` 가 포함되어 있어, 해당 브랜치에 푸시되면 자동으로 Pages에 배포됩니다.
-
-최초 1회만 저장소 설정이 필요할 수 있습니다:
-
-- **Settings → Pages → Build and deployment → Source** 를 **GitHub Actions** 로 설정합니다.
-- 또는 **Source: Deploy from a branch** 를 선택하고 브랜치와 `/ (root)` 를 지정합니다.
-
-배포가 끝나면 Settings → Pages 상단에 표시되는 주소로 접속하면 됩니다.
+Pages 소스는 **Settings → Pages → Source: GitHub Actions** 로 설정되어 있어야 합니다.
