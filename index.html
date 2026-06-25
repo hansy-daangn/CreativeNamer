@@ -30,8 +30,16 @@
     padding:20px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(255,111,15,.18);}
   .pick:hover{background:#EA6300;}
   .pick .sub{display:block;font-size:12.5px;font-weight:600;opacity:.85;margin-top:4px;}
-  .pick2{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--chipInk);font-weight:700;font-size:13.5px;padding:12px;cursor:pointer;font-family:inherit;margin-top:8px;}
-  .pick2:hover{background:#F0F1F4;}
+
+  .perm .pdesc{font-size:12.5px;color:var(--mut);line-height:1.55;margin-bottom:11px;}
+  .perm .pdesc b{color:var(--ink);font-weight:700;}
+  .permlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;}
+  .dirtag{display:inline-flex;align-items:center;gap:7px;background:#EAF2FF;color:var(--blue);border-radius:8px;padding:6px 8px 6px 10px;font-size:12.5px;font-weight:600;}
+  .dirtag.off{background:#F0F1F4;color:var(--mut);}
+  .dirtag .dx{border:none;background:none;color:inherit;opacity:.55;cursor:pointer;font-size:11px;padding:0;font-family:inherit;}
+  .dirtag .dx:hover{opacity:1;}
+  .dirtag .dr{border:none;background:var(--blue);color:#fff;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;}
+  .dirnone{font-size:12.5px;color:var(--mut);}
 
   .files{margin:14px 0 0;}
   .files .hd{display:flex;align-items:center;margin-bottom:8px;}
@@ -42,7 +50,10 @@
   .frow .x{width:22px;height:22px;flex:none;border:none;border-radius:6px;background:var(--chip);color:var(--mut);cursor:pointer;font-size:12px;}
   .frow .x:hover{background:#FFE0CC;color:var(--orange);}
   .frow .nm{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-size:14px;}
+  .frow .lk{flex:none;font-size:12px;}
   .frow .rs{flex:none;color:var(--orange);font-weight:700;font-size:12.5px;}
+  .needgrant{display:none;align-items:center;gap:10px;background:#FFF4E8;border:1px solid #FFD9B8;border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;color:#A85A12;line-height:1.5;}
+  .needgrant button{margin-left:auto;border:none;background:var(--orange);color:#fff;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .empty{color:var(--mut);font-size:13.5px;padding:14px;border:1px dashed var(--line);border-radius:10px;text-align:center;}
 
   .field{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:12px;}
@@ -58,6 +69,8 @@
   .chip.none{color:var(--mut);}
   .chip .rx{margin-left:8px;font-size:11px;opacity:.5;}
   .chip.sug{background:var(--blueBg);color:var(--blue);}
+  .chip.grant{background:var(--blueBg);color:var(--blue);font-weight:700;}
+  .chip.grant:hover{background:#E0ECFF;}
   .addinp{width:130px;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:14px;outline:none;font-family:inherit;}
   .addinp:focus{border-color:var(--ac);}
   input.txt{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:16px;outline:none;font-family:inherit;}
@@ -89,12 +102,19 @@
 <div id="warn" class="warn">⚠️ 이 브라우저에서는 파일 이름 변경이 동작하지 않습니다. <b>Chrome</b> 또는 <b>Microsoft Edge</b> 최신 버전으로 접속해 주세요. (File System Access API 필요)</div>
 <header><div class="head">파일명 일괄 변경기</div></header>
 <main>
-  <button id="pickDir" class="pick">＋ 폴더에서 선택<span class="sub">폴더·파일을 드래그앤드롭 해도 됩니다 · 권한 허용 1회로 끝</span></button>
-  <button id="pickFiles" class="pick2">또는 개별 파일 선택 (파일마다 권한 확인이 떠요)</button>
+  <button id="pick" class="pick">＋ 파일 선택<span class="sub">또는 파일을 이 화면에 드래그앤드롭</span></button>
+
+  <div class="field perm">
+    <div class="lab"><span>폴더 권한</span><span class="opt">한 번만 허용하면 계속 유지돼요</span></div>
+    <div class="pdesc">자주 쓰는 폴더를 한 번 허용해두면, 그 폴더(하위 폴더 포함) 안의 파일은 드래그만 해도 <b>추가 확인 없이</b> 바로 바뀌어요. 컴퓨터를 꺼다 켜거나 창을 닫아도 유지됩니다.</div>
+    <div class="chips" id="permQuick"></div>
+    <div id="permList" class="permlist"></div>
+  </div>
 
   <div class="files">
     <div class="hd"><button class="t" id="filesT" type="button">▸ 선택된 파일 0</button><button id="clr" class="clr" style="display:none">모두 지우기</button></div>
     <div id="fileList"></div>
+    <div id="needGrant" class="needgrant"></div>
   </div>
 
   <div class="field">
@@ -137,7 +157,6 @@ function delDiv(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_divs"
 const VIDEO=["mp4","mov","avi","wmv","mkv","flv","avchd","mxf","m4v","webm","mpg","mpeg","m2ts","ts"];
 const IMAGE=["jpg","jpeg","png","gif","ai","svg","tif","tiff","raw","heif","heic","psd","pdf","eps","bmp","ico","tga","dng","webp"];
 function typeFor(n){const e=(n.split(".").pop()||"").toLowerCase();if(VIDEO.includes(e))return"vdo";if(IMAGE.includes(e))return"img";return"";}
-function isMedia(n){const e=(n.split(".").pop()||"").toLowerCase();return VIDEO.includes(e)||IMAGE.includes(e);}
 function extOf(n){const i=n.lastIndexOf(".");return i>0?n.slice(i):"";}
 const SUG=[{n:"catalogBlack"},{n:"rent",series:"promo",service:"realty"},{n:"spring",series:"keyword",service:"fleamarket"},{n:"summer",series:"keyword",service:"fleamarket"},{n:"fall",series:"keyword",service:"fleamarket"},{n:"winter",series:"keyword",service:"fleamarket"},{n:"newYear"},{n:"newyearBogum"},{n:"santa",series:"shortForm",service:"jobs"},{n:"staff",series:"shortForm",service:"jobs"},{n:"closet",service:"fleamarket"},{n:"findhome",service:"realty"},{n:"cafejobs",service:"jobs"},{n:"Review",service:"LocalAds"},{n:"potatoGroup",service:"group"},{n:"boomup"},{n:"variation"},{n:"BizAwards",service:"LocalAds"},{n:"NoCommission",service:"fleamarket"}];
 const ORDER=["type","division","service","material","resolution","date"];
@@ -253,54 +272,103 @@ function applyFilesOpen(){
 function renderFiles(){
   const box=$("fileList");
   if(files.length){
-    box.innerHTML=files.map((f,i)=>`<div class="frow"><button class="x" data-i="${i}">✕</button><span class="nm">${f.name}</span><span class="rs">${f.res||"?"}</span></div>`).join("");
-    box.querySelectorAll(".x").forEach(b=>b.onclick=(e)=>{e.stopPropagation();files.splice(+b.dataset.i,1);renderFiles();refresh();});
+    box.innerHTML=files.map((f,i)=>`<div class="frow"><button class="x" data-i="${i}">✕</button><span class="nm">${f.name}</span>${f.cov?"":'<span class="lk" title="아직 권한이 없는 폴더예요">🔒</span>'}<span class="rs">${f.res||"?"}</span></div>`).join("");
+    box.querySelectorAll(".x").forEach(b=>b.onclick=(e)=>{e.stopPropagation();files.splice(+b.dataset.i,1);renderFiles();updateNeedGrant();refresh();});
     $("clr").style.display="inline";
   } else { box.innerHTML=""; $("clr").style.display="none"; filesOpen=false; }
   applyFilesOpen();
 }
 $("filesT").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
-$("clr").onclick=()=>{files=[];renderFiles();refresh();};
+$("clr").onclick=()=>{files=[];renderFiles();updateNeedGrant();refresh();};
 
-/* ===== File System Access API: 파일 추가 + 이름 변경 ===== */
-const SUPPORTED = !!(window.showOpenFilePicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
+/* ===== File System Access API + 폴더 권한 관리 ===== */
+const SUPPORTED = !!(window.showOpenFilePicker && window.showDirectoryPicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
+const COMMON=[{id:"desktop",l:"바탕화면"},{id:"downloads",l:"다운로드"},{id:"documents",l:"문서"},{id:"pictures",l:"사진"}];
+let grantedDirs=[];
+
 async function ensureRW(handle){try{
   const opt={mode:"readwrite"};
   if((await handle.queryPermission(opt))==="granted")return true;
   return (await handle.requestPermission(opt))==="granted";
 }catch(e){return false;}}
+
+/* IndexedDB: 허용 폴더 핸들 영구 저장 */
+const IDB_DB="namerfs",IDB_STORE="kv",DIRS_KEY="grantedDirs";
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(IDB_DB,1);r.onupgradeneeded=()=>{r.result.createObjectStore(IDB_STORE);};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function idbGet(k){try{const db=await idb();return await new Promise((res,rej)=>{const t=db.transaction(IDB_STORE,"readonly").objectStore(IDB_STORE).get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error);});}catch(e){return undefined;}}
+async function idbSet(k,v){try{const db=await idb();await new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,"readwrite");tx.objectStore(IDB_STORE).put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}catch(e){}}
+async function saveGrantedDirs(){await idbSet(DIRS_KEY,grantedDirs);}
+async function loadGrantedDirs(){const arr=await idbGet(DIRS_KEY);if(Array.isArray(arr)){for(const h of arr){if(h&&h.kind==="directory")grantedDirs.push(h);}}}
+
+async function dirThatCovers(fileHandle){
+  for(const g of grantedDirs){
+    try{const rel=await g.resolve(fileHandle);if(rel)return{dir:g,rel:rel};}catch(e){}
+  }
+  return null;
+}
+async function rwFileHandle(cov){
+  let dh=cov.dir;const rel=cov.rel;
+  for(let i=0;i<rel.length-1;i++){dh=await dh.getDirectoryHandle(rel[i]);}
+  return await dh.getFileHandle(rel[rel.length-1]);
+}
+async function recheckCoverage(){
+  for(const f of files){try{f.cov=!!(await dirThatCovers(f.handle));}catch(e){f.cov=false;}}
+  renderFiles();updateNeedGrant();refresh();
+}
+function updateNeedGrant(){
+  const el=$("needGrant");const un=files.filter(f=>!f.cov);
+  if(un.length){el.style.display="flex";el.innerHTML=`🔒 아직 권한이 없는 폴더의 파일이 <b style="margin:0 3px">${un.length}</b>개 있어요. <button id="ngBtn">이 파일들의 폴더 허용하기</button>`;$("ngBtn").onclick=()=>grantParentOf(un[0].handle);}
+  else{el.style.display="none";el.innerHTML="";}
+}
+
+async function addDir(handle){
+  for(const d of grantedDirs){try{if(d.isSameEntry&&await d.isSameEntry(handle)){toast("이미 허용된 폴더예요");return;}}catch(e){}}
+  if(!await ensureRW(handle)){toast("폴더 권한이 거부됐어요");return;}
+  grantedDirs.push(handle);await saveGrantedDirs();await renderDirs();await recheckCoverage();
+  toast(`'${handle.name}' 폴더를 허용했어요`);
+}
+async function removeDir(i){grantedDirs.splice(i,1);await saveGrantedDirs();await renderDirs();await recheckCoverage();}
+async function quickGrant(wk){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
+  try{const h=await window.showDirectoryPicker({mode:"readwrite",startIn:wk});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
+async function grantCustom(){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
+  try{const h=await window.showDirectoryPicker({mode:"readwrite"});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
+async function grantParentOf(fileHandle){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
+  try{const h=await window.showDirectoryPicker({mode:"readwrite",startIn:fileHandle});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
+
+async function renderDirs(){
+  const q=$("permQuick");q.innerHTML="";
+  COMMON.forEach(c=>{const b=document.createElement("button");b.className="chip grant";b.textContent=c.l+" 허용";b.onclick=()=>quickGrant(c.id);q.appendChild(b);});
+  const cb=document.createElement("button");cb.className="chip";cb.textContent="＋ 다른 폴더 직접 허용";cb.onclick=grantCustom;q.appendChild(cb);
+  const l=$("permList");
+  if(grantedDirs.length){
+    const parts=await Promise.all(grantedDirs.map(async(d,i)=>{
+      let st="prompt";try{st=await d.queryPermission({mode:"readwrite"});}catch(e){}
+      const need=st!=="granted";
+      return `<span class="dirtag${need?' off':''}">📁 ${d.name}${need?` <button class="dr" data-i="${i}">재허용</button>`:""}<button class="dx" data-i="${i}">✕</button></span>`;
+    }));
+    l.innerHTML=parts.join("");
+    l.querySelectorAll(".dx").forEach(b=>b.onclick=()=>removeDir(+b.dataset.i));
+    l.querySelectorAll(".dr").forEach(b=>b.onclick=async()=>{const d=grantedDirs[+b.dataset.i];if(await ensureRW(d)){await saveGrantedDirs();await renderDirs();await recheckCoverage();}});
+  } else l.innerHTML=`<span class="dirnone">아직 허용된 폴더가 없어요. 위에서 자주 쓰는 폴더를 한 번 허용해 두세요.</span>`;
+}
+
 async function addHandle(h){
   if(!h||h.kind!=="file")return;
-  for(const f of files){ if(f.handle===h)return; if(f.handle.isSameEntry&&await f.handle.isSameEntry(h))return; }
-  const rec={handle:h,name:h.name,res:""};
+  for(const f of files){if(f.handle===h)return;if(f.handle.isSameEntry&&await f.handle.isSameEntry(h))return;}
+  const rec={handle:h,name:h.name,res:"",cov:false};
   files.push(rec);renderFiles();refresh();
-  ensureRW(h);
+  try{rec.cov=!!(await dirThatCovers(h));}catch(e){}
   try{const file=await h.getFile();rec.res=await getRes(file,h.name);}catch(e){}
-  renderFiles();refresh();
-}
-async function pickFolder(){
-  if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
-  try{
-    const dir=await window.showDirectoryPicker({mode:"readwrite"});
-    if(!await ensureRW(dir)){toast("폴더 쓰기 권한이 필요합니다");return;}
-    const entries=[];
-    for await(const e of dir.values()){if(e.kind==="file"&&isMedia(e.name))entries.push(e);}
-    entries.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-    if(!entries.length){toast("폴더에 이미지/영상 파일이 없습니다");return;}
-    for(const h of entries){await addHandle(h);}
-  }catch(e){if(e&&e.name!=="AbortError")toast("폴더 선택 실패: "+(e.message||e));}
+  renderFiles();updateNeedGrant();refresh();
 }
 async function pickFiles(){
   if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
-  try{
-    const handles=await window.showOpenFilePicker({multiple:true});
-    for(const h of handles){await addHandle(h);}
-  }catch(e){if(e&&e.name!=="AbortError")toast("파일 선택 실패: "+(e.message||e));}
+  try{const handles=await window.showOpenFilePicker({multiple:true});for(const h of handles){await addHandle(h);}}
+  catch(e){if(e&&e.name!=="AbortError")toast("파일 선택 실패: "+(e.message||e));}
 }
-$("pickDir").onclick=pickFolder;
-$("pickFiles").onclick=pickFiles;
+$("pick").onclick=pickFiles;
 
-/* 드래그앤드롭 */
+/* 드래그앤드롭: 파일 → 변경 대상 추가 / 폴더 → 권한 허용 */
 (function setupDrop(){
   const stop=e=>{e.preventDefault();e.stopPropagation();};
   let depth=0;
@@ -315,7 +383,7 @@ $("pickFiles").onclick=pickFiles;
     const handles=await Promise.all(items.map(i=>i.getAsFileSystemHandle().catch(()=>null)));
     for(const h of handles){
       if(!h)continue;
-      if(h.kind==="directory"){try{await ensureRW(h);for await(const entry of h.values()){if(entry.kind==="file"&&isMedia(entry.name))await addHandle(entry);}}catch(e){}}
+      if(h.kind==="directory")await addDir(h);
       else await addHandle(h);
     }
   });
@@ -326,32 +394,34 @@ $("go").onclick=async()=>{
   if(!$("mat").value.trim()){toast("소재명을 입력하세요");return;}
   if(!files.length){toast("먼저 파일을 선택하세요");return;}
   const p=plans();$("go").disabled=true;
-  let ok=0;const errs=[];
+  let ok=0;const errs=[];let uncov=0;
   for(const it of p){
     try{
-      if(it.to!==it.from){
-        if(it.handle.queryPermission&&(await it.handle.queryPermission({mode:"readwrite"}))!=="granted"){
-          if((await it.handle.requestPermission({mode:"readwrite"}))!=="granted")throw new Error("권한이 거부되었습니다");
-        }
-        await it.handle.move(it.to);
-      }
-      const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0)files[fi].name=it.to;
+      const cov=await dirThatCovers(it.handle);
+      if(!cov){uncov++;continue;}
+      if(!await ensureRW(cov.dir)){errs.push(it.from+": 폴더 권한 거부됨");continue;}
+      const fh=await rwFileHandle(cov);
+      if(it.to!==it.from)await fh.move(it.to);
+      const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0){files[fi].name=it.to;files[fi].handle=fh;}
       ok++;
     }catch(e){errs.push(it.from+": "+((e&&e.message)||e));}
   }
-  renderFiles();refresh();
+  await recheckCoverage();
   if(ok>0){addMat($("mat").value);renderSug();}
-  if(errs.length)alert(`성공 ${ok}개 / 실패 ${errs.length}개\n\n`+errs.slice(0,8).join("\n"));else toast(`${ok}개 파일 이름을 바꿨어요!`);
+  if(uncov>0){updateNeedGrant();toast("권한 없는 폴더의 파일은 폴더를 먼저 허용해 주세요");}
+  if(errs.length)alert(`성공 ${ok}개 / 실패 ${errs.length}개\n\n`+errs.slice(0,8).join("\n"));
+  else if(ok>0)toast(`${ok}개 파일 이름을 바꿨어요!`);
   $("go").disabled=false;refresh();
 };
 
-if(!SUPPORTED){$("warn").classList.add("show");$("pickDir").disabled=true;$("pickFiles").disabled=true;}
+if(!SUPPORTED){$("warn").classList.add("show");$("pick").disabled=true;}
 chips("g_div",DIVS,"division",{none:true,add:true,persist:saveDiv,deletable:true,fixed:["maugrowth"],onDel:delDiv});
 chips("g_svc",SERVICES,"service",{none:true,add:false});
 renderSer();pill();renderSug();renderFiles();
 $("mat").addEventListener("input",refresh);
 $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
 refresh();
+(async()=>{try{await loadGrantedDirs();}catch(e){}await renderDirs();})();
 
 /* ===== PWA: 설치 + 서비스워커 ===== */
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
