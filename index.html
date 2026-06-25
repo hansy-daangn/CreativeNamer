@@ -24,12 +24,6 @@
   .hnav{display:flex;align-items:center;gap:12px;}
   .hlink{font-size:13px;color:var(--mut);cursor:pointer;text-decoration:none;white-space:nowrap;font-family:inherit;}
   .hlink:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
-  .hlink .short{display:none;}
-  .hnav .sep{color:var(--line);font-size:12px;}
-  @media (max-width:600px){
-    .hlink .full{display:none;}
-    .hlink .short{display:inline;}
-  }
   main{max-width:720px;margin:0 auto;padding:22px 22px 190px;}
 
   .warn{display:none;background:#FFE8E8;color:#B30000;padding:12px 16px;text-align:center;font-size:13.5px;border-bottom:1px solid #F5C2C2;line-height:1.55;}
@@ -101,9 +95,7 @@
 <header><div class="head">
   <span class="brand">파일명 일괄 변경기</span>
   <nav class="hnav">
-    <a id="grantQuick" class="hlink"><span class="full">한 번에 모든 폴더권한 허용</span><span class="short">한 번에 권한 허용</span></a>
-    <span class="sep">|</span>
-    <a id="grantCustom" class="hlink"><span class="full">직접 폴더권한 허용</span><span class="short">직접 권한 허용</span></a>
+    <a id="grantCustom" class="hlink">폴더 권한 허용</a>
   </nav>
 </div></header>
 <main>
@@ -328,23 +320,6 @@ async function grantCustom(){if(!SUPPORTED){toast("이 브라우저는 지원되
   try{const h=await window.showDirectoryPicker({mode:"readwrite"});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
 async function grantParentOf(fileHandle){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
   try{const h=await window.showDirectoryPicker({mode:"readwrite",startIn:fileHandle});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
-let quickPhase=0;
-const QUICK=[{id:"desktop",l:"바탕화면"},{id:"downloads",l:"다운로드"}];
-async function quickGrantAll(){
-  if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
-  for(let s=quickPhase;s<QUICK.length;s++){
-    try{
-      const h=await window.showDirectoryPicker({mode:"readwrite",startIn:QUICK[s].id});
-      await addDir(h);quickPhase=s+1;
-    }catch(e){
-      quickPhase=s;
-      if(e&&e.name==="AbortError")return;
-      toast(QUICK[s].l+" 폴더는 버튼을 한 번 더 눌러 허용해 주세요");return;
-    }
-  }
-  quickPhase=0;toast("폴더 권한 허용 완료!");
-}
-$("grantQuick").onclick=quickGrantAll;
 $("grantCustom").onclick=grantCustom;
 
 async function addHandle(h){
