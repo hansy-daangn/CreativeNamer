@@ -23,7 +23,7 @@
   .hnav{display:flex;align-items:center;gap:12px;}
   .hlink{font-size:13px;color:var(--mut);cursor:pointer;text-decoration:none;white-space:nowrap;font-family:inherit;}
   .hlink:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
-  main{max-width:720px;margin:0 auto;padding:22px 22px 190px;}
+  main{max-width:720px;margin:0 auto;padding:22px 22px 200px;}
 
   .warn{display:none;background:#FFE8E8;color:#B30000;padding:12px 16px;text-align:center;font-size:13.5px;border-bottom:1px solid #F5C2C2;line-height:1.55;}
   .warn.show{display:block;}
@@ -43,10 +43,7 @@
   .frow .x{width:22px;height:22px;flex:none;border:none;border-radius:6px;background:var(--chip);color:var(--mut);cursor:pointer;font-size:12px;}
   .frow .x:hover{background:#FFE0CC;color:var(--orange);}
   .frow .nm{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-size:14px;}
-  .frow .lk{flex:none;font-size:12px;}
   .frow .rs{flex:none;color:var(--orange);font-weight:700;font-size:12.5px;}
-  .needgrant{display:none;align-items:center;gap:10px;background:#FFF4E8;border:1px solid #FFD9B8;border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;color:#A85A12;line-height:1.5;}
-  .needgrant button{margin-left:auto;border:none;background:var(--orange);color:#fff;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .empty{color:var(--mut);font-size:13.5px;padding:14px;border:1px dashed var(--line);border-radius:10px;text-align:center;}
 
   .field{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:12px;}
@@ -74,18 +71,19 @@
   .panelbox.open{display:block;}
 
   .dock{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:40;}
-  .din{max-width:720px;margin:0 auto;padding:14px 22px;display:flex;gap:14px;align-items:stretch;}
-  .pv{flex:1;min-width:0;background:var(--ink);border-radius:12px;padding:13px 15px;}
-  .pv .ph{color:#9AA0AA;font-size:11px;margin-bottom:6px;}
-  .pv .body{color:#FFD9BD;font-size:14.5px;line-height:1.7;white-space:pre-line;max-height:88px;overflow:auto;font-family:ui-monospace,"D2Coding",Consolas,monospace;font-weight:600;}
-  .pv .msg{color:#FF9D9D;font-size:12px;margin-top:5px;font-weight:600;}
-  .go{flex:none;width:150px;border:none;border-radius:12px;background:var(--ac);color:#fff;font-weight:800;font-size:16px;cursor:pointer;font-family:inherit;}
-  .go:disabled{background:#C7CACF;cursor:not-allowed;}
-  .toast{position:fixed;left:50%;bottom:200px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
+  .din{max-width:720px;margin:0 auto;padding:14px 22px;}
+  .gobtn{display:block;width:100%;text-align:left;background:var(--ink);border:none;border-radius:12px;padding:13px 15px;cursor:pointer;font-family:inherit;}
+  .gobtn:hover{background:#0F1115;}
+  .gobtn:disabled{opacity:.5;cursor:not-allowed;}
+  .gobtn .body{color:#FFD9BD;font-size:14.5px;line-height:1.7;white-space:pre-line;max-height:84px;overflow:auto;font-family:ui-monospace,"D2Coding",Consolas,monospace;font-weight:600;}
+  .gobtn .msg{color:#FF9D9D;font-size:12px;margin-top:5px;font-weight:600;}
+  .gobtn .goline{display:flex;align-items:center;gap:7px;color:#fff;font-weight:800;font-size:15px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12);}
+  .gobtn .goline .arr{color:var(--orange);font-size:18px;line-height:1;}
+  .toast{position:fixed;left:50%;bottom:210px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
   .toast.show{opacity:1;}
   .dropmask{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(27,29,34,.55);color:#fff;font-size:22px;font-weight:800;z-index:80;pointer-events:none;}
   body.drag .dropmask{display:flex;}
-  .installLink{position:fixed;right:18px;bottom:92px;z-index:50;display:none;font-size:13px;color:var(--mut);text-decoration:none;cursor:pointer;font-family:inherit;}
+  .installLink{position:fixed;right:18px;bottom:104px;z-index:50;display:none;font-size:13px;color:var(--mut);text-decoration:none;cursor:pointer;font-family:inherit;}
   .installLink:hover{color:#1D5FD6;text-decoration:underline;text-decoration-color:#1D5FD6;text-underline-offset:3px;}
 </style>
 </head>
@@ -103,7 +101,6 @@
   <div class="files">
     <div class="hd"><button class="t" id="filesT" type="button">▸ 선택된 파일 0</button><button id="clr" class="clr" style="display:none">모두 지우기</button></div>
     <div id="fileList"></div>
-    <div id="needGrant" class="needgrant"></div>
   </div>
 
   <div class="field">
@@ -129,8 +126,11 @@
 </main>
 
 <div class="dock"><div class="din">
-  <div class="pv"><div class="ph">미리보기</div><div id="pv" class="body"></div><div id="msg" class="msg"></div></div>
-  <button id="go" class="go">이름 바꾸기</button>
+  <button id="go" class="gobtn">
+    <div id="pv" class="body"></div>
+    <div id="msg" class="msg"></div>
+    <div class="goline"><span class="arr">→</span> 이대로 바꾸기</div>
+  </button>
 </div></div>
 <div id="toast" class="toast"></div>
 <div class="dropmask">파일을 여기에 놓으세요</div>
@@ -261,16 +261,16 @@ function applyFilesOpen(){
 function renderFiles(){
   const box=$("fileList");
   if(files.length){
-    box.innerHTML=files.map((f,i)=>`<div class="frow"><button class="x" data-i="${i}">✕</button><span class="nm">${f.name}</span>${f.cov?"":'<span class="lk" title="아직 권한이 없는 폴더예요">🔒</span>'}<span class="rs">${f.res||"?"}</span></div>`).join("");
-    box.querySelectorAll(".x").forEach(b=>b.onclick=(e)=>{e.stopPropagation();files.splice(+b.dataset.i,1);renderFiles();updateNeedGrant();refresh();});
+    box.innerHTML=files.map((f,i)=>`<div class="frow"><button class="x" data-i="${i}">✕</button><span class="nm">${f.name}</span><span class="rs">${f.res||"?"}</span></div>`).join("");
+    box.querySelectorAll(".x").forEach(b=>b.onclick=(e)=>{e.stopPropagation();files.splice(+b.dataset.i,1);renderFiles();refresh();});
     $("clr").style.display="inline";
   } else { box.innerHTML=""; $("clr").style.display="none"; filesOpen=false; }
   applyFilesOpen();
 }
 $("filesT").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
-$("clr").onclick=()=>{files=[];renderFiles();updateNeedGrant();refresh();};
+$("clr").onclick=()=>{files=[];renderFiles();refresh();};
 
-/* ===== File System Access API + 폴더 권한 관리 ===== */
+/* ===== File System Access API ===== */
 const SUPPORTED = !!(window.showOpenFilePicker && window.showDirectoryPicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
 let grantedDirs=[];
 
@@ -280,7 +280,7 @@ async function ensureRW(handle){try{
   return (await handle.requestPermission(opt))==="granted";
 }catch(e){return false;}}
 
-/* IndexedDB: 허용 폴더 핸들 영구 저장 */
+/* IndexedDB: 허용 폴더 핸들 영구 저장 (선택적 가속 — 미리 허용해두면 그 폴더 파일은 확인창 없이 변경) */
 const IDB_DB="namerfs",IDB_STORE="kv",DIRS_KEY="grantedDirs";
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(IDB_DB,1);r.onupgradeneeded=()=>{r.result.createObjectStore(IDB_STORE);};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function idbGet(k){try{const db=await idb();return await new Promise((res,rej)=>{const t=db.transaction(IDB_STORE,"readonly").objectStore(IDB_STORE).get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error);});}catch(e){return undefined;}}
@@ -299,36 +299,23 @@ async function rwFileHandle(cov){
   for(let i=0;i<rel.length-1;i++){dh=await dh.getDirectoryHandle(rel[i]);}
   return await dh.getFileHandle(rel[rel.length-1]);
 }
-async function recheckCoverage(){
-  for(const f of files){try{f.cov=!!(await dirThatCovers(f.handle));}catch(e){f.cov=false;}}
-  renderFiles();updateNeedGrant();refresh();
-}
-function updateNeedGrant(){
-  const el=$("needGrant");const un=files.filter(f=>!f.cov);
-  if(un.length){el.style.display="flex";el.innerHTML=`🔒 아직 권한이 없는 폴더의 파일이 <b style="margin:0 3px">${un.length}</b>개 있어요. <button id="ngBtn">이 파일들의 폴더 허용하기</button>`;$("ngBtn").onclick=()=>grantParentOf(un[0].handle);}
-  else{el.style.display="none";el.innerHTML="";}
-}
-
 async function addDir(handle){
-  for(const d of grantedDirs){try{if(d.isSameEntry&&await d.isSameEntry(handle)){await ensureRW(d);await recheckCoverage();toast("폴더 권한을 갱신했어요");return;}}catch(e){}}
+  for(const d of grantedDirs){try{if(d.isSameEntry&&await d.isSameEntry(handle)){await ensureRW(d);toast("폴더 권한을 갱신했어요");return;}}catch(e){}}
   if(!await ensureRW(handle)){toast("폴더 권한이 거부됐어요");return;}
-  grantedDirs.push(handle);await saveGrantedDirs();await recheckCoverage();
+  grantedDirs.push(handle);await saveGrantedDirs();
   toast(`'${handle.name}' 폴더를 허용했어요`);
 }
 async function grantCustom(){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
   try{const h=await window.showDirectoryPicker({mode:"readwrite"});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
-async function grantParentOf(fileHandle){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
-  try{const h=await window.showDirectoryPicker({mode:"readwrite",startIn:fileHandle});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
 $("grantCustom").onclick=grantCustom;
 
 async function addHandle(h){
   if(!h||h.kind!=="file")return;
   for(const f of files){if(f.handle===h)return;if(f.handle.isSameEntry&&await f.handle.isSameEntry(h))return;}
-  const rec={handle:h,name:h.name,res:"",cov:false};
+  const rec={handle:h,name:h.name,res:""};
   files.push(rec);renderFiles();refresh();
-  try{rec.cov=!!(await dirThatCovers(h));}catch(e){}
   try{const file=await h.getFile();rec.res=await getRes(file,h.name);}catch(e){}
-  renderFiles();updateNeedGrant();refresh();
+  renderFiles();refresh();
 }
 async function pickFiles(){
   if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
@@ -363,21 +350,20 @@ $("go").onclick=async()=>{
   if(!$("mat").value.trim()){toast("소재명을 입력하세요");return;}
   if(!files.length){toast("먼저 파일을 선택하세요");return;}
   const p=plans();$("go").disabled=true;
-  let ok=0;const errs=[];let uncov=0;
+  let ok=0;const errs=[];
   for(const it of p){
     try{
+      let target=it.handle;
       const cov=await dirThatCovers(it.handle);
-      if(!cov){uncov++;continue;}
-      if(!await ensureRW(cov.dir)){errs.push(it.from+": 폴더 권한 거부됨");continue;}
-      const fh=await rwFileHandle(cov);
-      if(it.to!==it.from)await fh.move(it.to);
-      const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0){files[fi].name=it.to;files[fi].handle=fh;}
+      if(cov&&await ensureRW(cov.dir)){target=await rwFileHandle(cov);}
+      else if(!await ensureRW(it.handle)){errs.push(it.from+": 권한이 거부되었습니다");continue;}
+      if(it.to!==it.from)await target.move(it.to);
+      const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0){files[fi].name=it.to;files[fi].handle=target;}
       ok++;
     }catch(e){errs.push(it.from+": "+((e&&e.message)||e));}
   }
-  await recheckCoverage();
+  renderFiles();refresh();
   if(ok>0){addMat($("mat").value);renderSug();}
-  if(uncov>0){updateNeedGrant();toast("권한 없는 폴더의 파일은 폴더를 먼저 허용해 주세요");}
   if(errs.length)alert(`성공 ${ok}개 / 실패 ${errs.length}개\n\n`+errs.slice(0,8).join("\n"));
   else if(ok>0)toast(`${ok}개 파일 이름을 바꿨어요!`);
   $("go").disabled=false;refresh();
@@ -390,7 +376,7 @@ renderSer();pill();renderSug();renderFiles();
 $("mat").addEventListener("input",refresh);
 $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
 refresh();
-(async()=>{try{await loadGrantedDirs();}catch(e){}await recheckCoverage();})();
+(async()=>{try{await loadGrantedDirs();}catch(e){}})();
 
 /* ===== PWA: 설치 + 서비스워커 ===== */
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
