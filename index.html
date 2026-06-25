@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>파일명 일괄 변경기</title>
+<style>
+  :root{
+    --bg:#F5F6F8; --card:#fff; --ink:#1B1D22; --mut:#8A8F98; --line:#E8EAED;
+    --ac:#1B1D22; --orange:#FF6F0F; --chip:#F0F1F4; --chipInk:#3D424B; --blue:#1D5FD6; --blueBg:#EFF5FF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--bg);color:var(--ink);font-size:15px;
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:ui-monospace,"D2Coding",Consolas,monospace;}
+  header{position:sticky;top:0;z-index:5;background:rgba(245,246,248,.9);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line);}
+  .head{max-width:720px;margin:0 auto;padding:18px 22px;font-size:18px;font-weight:800;text-align:center;}
+  main{max-width:720px;margin:0 auto;padding:22px 22px 190px;}
+
+  .warn{display:none;background:#FFE8E8;color:#B30000;padding:12px 16px;text-align:center;font-size:13.5px;border-bottom:1px solid #F5C2C2;line-height:1.55;}
+  .warn.show{display:block;}
+  .warn b{font-weight:800;}
+
+  .pick{width:100%;border:none;border-radius:14px;background:var(--orange);color:#fff;font-weight:800;font-size:16px;
+    padding:20px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(255,111,15,.18);}
+  .pick:hover{background:#EA6300;}
+  .pick .sub{display:block;font-size:12.5px;font-weight:600;opacity:.85;margin-top:4px;}
+
+  .files{margin:14px 0 0;}
+  .files .hd{display:flex;align-items:center;margin-bottom:8px;}
+  .files .hd .t{font-size:13px;color:var(--mut);font-weight:700;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;}
+  .files .hd .t:hover{color:var(--ink);}
+  .files .hd .clr{margin-left:auto;background:none;border:none;color:var(--mut);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit;}
+  .frow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:6px;}
+  .frow .x{width:22px;height:22px;flex:none;border:none;border-radius:6px;background:var(--chip);color:var(--mut);cursor:pointer;font-size:12px;}
+  .frow .x:hover{background:#FFE0CC;color:var(--orange);}
+  .frow .nm{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-size:14px;}
+  .frow .rs{flex:none;color:var(--orange);font-weight:700;font-size:12.5px;}
+  .empty{color:var(--mut);font-size:13.5px;padding:14px;border:1px dashed var(--line);border-radius:10px;text-align:center;}
+
+  .field{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:12px;}
+  .lab{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:11px;}
+  .lab .opt{color:var(--mut);font-weight:500;font-size:12px;}
+  .lab .req{color:var(--orange);}
+  .lab .abbr{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mut);font-weight:500;cursor:pointer;}
+  .lab .abbr input{width:15px;height:15px;accent-color:var(--ac);margin:0;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .chip{background:var(--chip);border:1px solid transparent;border-radius:9px;padding:9px 15px;font-size:14.5px;color:var(--chipInk);cursor:pointer;line-height:1;font-family:inherit;}
+  .chip:hover{background:#E6E8EC;}
+  .chip.on{background:var(--ac);color:#fff;}
+  .chip.none{color:var(--mut);}
+  .chip .rx{margin-left:8px;font-size:11px;opacity:.5;}
+  .chip.sug{background:var(--blueBg);color:var(--blue);}
+  .addinp{width:130px;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:14px;outline:none;font-family:inherit;}
+  .addinp:focus{border-color:var(--ac);}
+  input.txt{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:16px;outline:none;font-family:inherit;}
+  input.txt:focus{border-color:var(--ac);}
+  .pillrow{display:flex;align-items:center;gap:8px;}
+  .pill{display:none;align-items:center;gap:6px;background:var(--ac);color:#fff;border-radius:9px;padding:10px 12px;font-size:14px;font-weight:700;white-space:nowrap;flex:none;}
+  .pill .px{cursor:pointer;opacity:.8;}
+  .toggle{margin-top:12px;background:none;border:none;color:var(--mut);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit;display:block;}
+  .panelbox{display:none;margin-top:12px;}
+  .panelbox.open{display:block;}
+
+  .dock{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:40;}
+  .din{max-width:720px;margin:0 auto;padding:14px 22px;display:flex;gap:14px;align-items:stretch;}
+  .pv{flex:1;min-width:0;background:var(--ink);border-radius:12px;padding:13px 15px;}
+  .pv .ph{color:#9AA0AA;font-size:11px;margin-bottom:6px;}
+  .pv .body{color:#FFD9BD;font-size:14.5px;line-height:1.7;white-space:pre-line;max-height:88px;overflow:auto;font-family:ui-monospace,"D2Coding",Consolas,monospace;font-weight:600;}
+  .pv .msg{color:#FF9D9D;font-size:12px;margin-top:5px;font-weight:600;}
+  .go{flex:none;width:150px;border:none;border-radius:12px;background:var(--ac);color:#fff;font-weight:800;font-size:16px;cursor:pointer;font-family:inherit;}
+  .go:disabled{background:#C7CACF;cursor:not-allowed;}
+  .toast{position:fixed;left:50%;bottom:200px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
+  .toast.show{opacity:1;}
+  .dropmask{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(27,29,34,.55);color:#fff;font-size:22px;font-weight:800;z-index:80;pointer-events:none;}
+  body.drag .dropmask{display:flex;}
+</style>
+</head>
+<body>
+<div id="warn" class="warn">⚠️ 이 브라우저에서는 파일 이름 변경이 동작하지 않습니다. <b>Chrome</b> 또는 <b>Microsoft Edge</b> 최신 버전으로 접속해 주세요. (File System Access API 필요)</div>
+<header><div class="head">파일명 일괄 변경기</div></header>
+<main>
+  <button id="pick" class="pick">＋ 파일 선택<span class="sub">또는 파일을 이 화면에 드래그앤드롭</span></button>
+
+  <div class="files">
+    <div class="hd"><button class="t" id="filesT" type="button">▸ 선택된 파일 0</button><button id="clr" class="clr" style="display:none">모두 지우기</button></div>
+    <div id="fileList"></div>
+  </div>
+
+  <div class="field">
+    <div class="lab"><span>구분</span><span class="opt">선택</span></div>
+    <div id="g_div" class="chips"></div>
+  </div>
+  <div class="field">
+    <div class="lab"><span>서비스</span><span class="opt">선택</span>
+      <label class="abbr"><input type="checkbox" id="abbr"> 축약</label></div>
+    <div id="g_svc" class="chips"></div>
+  </div>
+  <div class="field">
+    <div class="lab"><span>소재명</span><span class="req">*</span></div>
+    <div class="pillrow">
+      <span class="pill" id="pill"><span id="pillt"></span><span class="px" id="pillx">✕</span></span>
+      <input id="mat" class="txt" placeholder="소재명을 입력하세요" autocomplete="off">
+    </div>
+    <button id="serT" class="toggle" type="button">＋ 시리즈 접두어</button>
+    <div id="serBox" class="panelbox"><div id="g_ser" class="chips"></div></div>
+    <button id="sugT" class="toggle" type="button">기존 소재명 보기 ▾</button>
+    <div id="sugBox" class="panelbox"><div id="g_sug" class="chips"></div></div>
+  </div>
+</main>
+
+<div class="dock"><div class="din">
+  <div class="pv"><div class="ph">미리보기</div><div id="pv" class="body"></div><div id="msg" class="msg"></div></div>
+  <button id="go" class="go">이름 바꾸기</button>
+</div></div>
+<div id="toast" class="toast"></div>
+<div class="dropmask">파일을 여기에 놓으세요</div>
+
+<script>
+const SERVICES=[{l:"중고거래",v:"fleamarket",a:"Fl"},{l:"알바",v:"jobs",a:"Jo"},{l:"모임",v:"group",a:"Gr"},{l:"부동산",v:"realty",a:"Rt"},{l:"중고차",v:"car",a:"Ca"},{l:"비즈니스",v:"LocalAds",a:"Ad"}];
+const ABBR=Object.fromEntries(SERVICES.map(s=>[s.v,s.a]));
+const DIVS=["maugrowth"];
+try{const _cd=JSON.parse(localStorage.getItem("namepresso_divs"));if(Array.isArray(_cd))_cd.forEach(d=>{if(!DIVS.includes(d))DIVS.push(d);});}catch(e){}
+function saveDiv(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_divs"))||[];}catch(e){c=[];}if(!c.includes(v)){c.push(v);localStorage.setItem("namepresso_divs",JSON.stringify(c));}}
+function delDiv(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_divs"))||[];}catch(e){c=[];}c=c.filter(x=>x!==v);localStorage.setItem("namepresso_divs",JSON.stringify(c));}
+const VIDEO=["mp4","mov","avi","wmv","mkv","flv","avchd","mxf","m4v","webm","mpg","mpeg","m2ts","ts"];
+const IMAGE=["jpg","jpeg","png","gif","ai","svg","tif","tiff","raw","heif","heic","psd","pdf","eps","bmp","ico","tga","dng","webp"];
+function typeFor(n){const e=(n.split(".").pop()||"").toLowerCase();if(VIDEO.includes(e))return"vdo";if(IMAGE.includes(e))return"img";return"";}
+function extOf(n){const i=n.lastIndexOf(".");return i>0?n.slice(i):"";}
+const SUG=[{n:"catalogBlack"},{n:"rent",series:"promo",service:"realty"},{n:"spring",series:"keyword",service:"fleamarket"},{n:"summer",series:"keyword",service:"fleamarket"},{n:"fall",series:"keyword",service:"fleamarket"},{n:"winter",series:"keyword",service:"fleamarket"},{n:"newYear"},{n:"newyearBogum"},{n:"santa",series:"shortForm",service:"jobs"},{n:"staff",series:"shortForm",service:"jobs"},{n:"closet",service:"fleamarket"},{n:"findhome",service:"realty"},{n:"cafejobs",service:"jobs"},{n:"Review",service:"LocalAds"},{n:"potatoGroup",service:"group"},{n:"boomup"},{n:"variation"},{n:"BizAwards",service:"LocalAds"},{n:"NoCommission",service:"fleamarket"}];
+const ORDER=["type","division","service","material","resolution","date"];
+const PK="namepresso_prefixes";
+const sel={division:"maugrowth",service:"fleamarket",series:null};
+let abbrev=false, files=[];
+
+const $=id=>document.getElementById(id);
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+function ymm(){const d=new Date();return String(d.getFullYear()%100).padStart(2,"0")+String(d.getMonth()+1).padStart(2,"0");}
+function loadP(){try{const p=JSON.parse(localStorage.getItem(PK));return Array.isArray(p)?p:["promo","keyword","event","pickupMonthly","shortForm"];}catch(e){return["promo","keyword","event","pickupMonthly","shortForm"];}}
+function saveP(p){try{localStorage.setItem(PK,JSON.stringify(p));}catch(e){}}
+let PREFIXES=loadP();["promo","keyword","event","pickupMonthly","shortForm"].forEach(p=>{if(!PREFIXES.includes(p))PREFIXES.push(p);});saveP(PREFIXES);
+const MK="namepresso_mats";
+function loadMats(){try{const a=JSON.parse(localStorage.getItem(MK));if(Array.isArray(a))return a;}catch(e){}
+  const seed=SUG.map(s=>{const o={n:s.n};if(s.service)o.service=s.service;if(s.series)o.series=s.series;return o;});
+  localStorage.setItem(MK,JSON.stringify(seed));return seed;}
+function saveMats(){try{localStorage.setItem(MK,JSON.stringify(MATS));}catch(e){}}
+let MATS=loadMats();
+function addMat(n){n=(n||"").trim();if(!n)return;const rec={n:n};if(sel.service)rec.service=sel.service;rec.division=sel.division;if(sel.series)rec.series=sel.series;
+  const i=MATS.findIndex(m=>m.n.toLowerCase()===n.toLowerCase());if(i>=0)MATS[i]=rec;else MATS.unshift(rec);saveMats();}
+function svcTok(){return sel.service?(abbrev?(ABBR[sel.service]||sel.service):sel.service):"";}
+function camel(s){const p=s.trim().split(/[\s_]+/).filter(Boolean);if(p.length<=1)return s.trim();return p[0].charAt(0).toLowerCase()+p[0].slice(1)+p.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join("");}
+function matTok(){const m=$("mat").value.trim();if(!m)return"";return sel.series?`${sel.series}-${m}`:m;}
+
+/* ===== 해상도 추출 (브라우저 측, renamer.ps1 로직 포팅) ===== */
+function BE32(b,o){return b[o]*16777216+b[o+1]*65536+b[o+2]*256+b[o+3];}
+function BE16(b,o){return b[o]*256+b[o+1];}
+function LE16(b,o){return b[o]+b[o+1]*256;}
+function ASCb(b,o,l){let s="";for(let i=0;i<l;i++)s+=String.fromCharCode(b[o+i]);return s;}
+async function readHead(file,m){const n=Math.min(file.size,m);const buf=await file.slice(0,n).arrayBuffer();return new Uint8Array(buf);}
+async function webpDim(file){const b=await readHead(file,64);if(b.length<30)return"";const f=ASCb(b,12,4);
+  if(f==="VP8X"){const w=1+(b[24]+b[25]*256+b[26]*65536);const h=1+(b[27]+b[28]*256+b[29]*65536);return w+"x"+h;}
+  if(f==="VP8 "){return (LE16(b,26)&0x3FFF)+"x"+(LE16(b,28)&0x3FFF);}
+  if(f==="VP8L"){const bits=b[21]+b[22]*256+b[23]*65536+b[24]*16777216;const w=(bits%16384)+1;const h=(Math.floor(bits/16384)%16384)+1;return w+"x"+h;}
+  return"";}
+async function heifDim(file){const b=await readHead(file,1048576);for(let i=0;i<b.length-16;i++){if(b[i]===0x69&&b[i+1]===0x73&&b[i+2]===0x70&&b[i+3]===0x65){const w=BE32(b,i+8),h=BE32(b,i+12);if(w>0&&h>0&&w<100000&&h<100000)return w+"x"+h;}}return"";}
+function mp4Boxes(b,s,e){const out=[];let off=s;while(off+8<=e){let size=BE32(b,off);const t=ASCb(b,off+4,4);let hd=8;if(size===1){size=BE32(b,off+12);hd=16;}else if(size===0){size=e-off;}if(size<8)break;out.push({type:t,body:off+hd,ed:off+size});off+=size;}return out;}
+function mp4Find(b,s,e,t){for(const x of mp4Boxes(b,s,e)){if(x.type===t)return x;}return null;}
+function mp4Moov(b){let best=null;for(const tr of mp4Boxes(b,8,b.length)){if(tr.type!=="trak")continue;
+  const md=mp4Find(b,tr.body,tr.ed,"mdia");if(!md)continue;
+  const hd=mp4Find(b,md.body,md.ed,"hdlr");let hand="";if(hd)hand=ASCb(b,hd.body+8,4);
+  const mi=mp4Find(b,md.body,md.ed,"minf");if(!mi)continue;
+  const st=mp4Find(b,mi.body,mi.ed,"stbl");if(!st)continue;
+  const sd=mp4Find(b,st.body,st.ed,"stsd");if(!sd)continue;
+  const es=sd.body+8;if(es+36>b.length)continue;const w=BE16(b,es+32),h=BE16(b,es+34);
+  if(hand==="vide"&&w>0&&h>0)return w+"x"+h;
+  if(w>0&&h>0){const a=w*h;if(!best||a>best.a)best={d:w+"x"+h,a:a};}}
+  return best?best.d:"";}
+async function mp4Dim(file){const size=file.size;let off=0;
+  while(off+8<=size){const hd=new Uint8Array(await file.slice(off,Math.min(off+16,size)).arrayBuffer());if(hd.length<8)break;
+    let boxSize=BE32(hd,0);const t=ASCb(hd,4,4);if(boxSize===1){boxSize=BE32(hd,12);}else if(boxSize===0){boxSize=size-off;}
+    if(t==="moov"){const len=Math.min(boxSize,size-off);const mb=new Uint8Array(await file.slice(off,off+len).arrayBuffer());return mp4Moov(mb);}
+    if(boxSize<8)break;off+=boxSize;}
+  return"";}
+async function imgDim(file){return await new Promise(res=>{const url=URL.createObjectURL(file);const im=new Image();im.onload=()=>{const r=im.naturalWidth+"x"+im.naturalHeight;URL.revokeObjectURL(url);res(im.naturalWidth?r:"");};im.onerror=()=>{URL.revokeObjectURL(url);res("");};im.src=url;});}
+async function getRes(file,name){const e=(name.split(".").pop()||"").toLowerCase();try{
+  if(["mp4","mov","m4v","qt"].includes(e)){const r=await mp4Dim(file);if(r)return r;}
+  if(["heic","heif","avif"].includes(e)){const r=await heifDim(file);if(r)return r;}
+  if(e==="webp"){const r=await webpDim(file);if(r)return r;}
+  if(typeof createImageBitmap==="function"){try{const bmp=await createImageBitmap(file);const r=bmp.width+"x"+bmp.height;if(bmp.close)bmp.close();if(bmp.width)return r;}catch(_){}}
+  const r=await imgDim(file);if(r)return r;
+}catch(_){}return"";}
+
+function chips(id,opts,key,o={}){
+  const box=$(id);const norm=opts.map(x=>typeof x==="string"?{l:x,v:x}:{l:x.l,v:x.v});
+  function r(){box.innerHTML="";
+    if(o.none){const b=document.createElement("button");b.className="chip none"+(sel[key]===null?" on":"");b.textContent="없음";b.onclick=()=>{sel[key]=null;r();refresh();};box.appendChild(b);}
+    norm.forEach(it=>{const b=document.createElement("button");b.className="chip"+(sel[key]===it.v?" on":"");
+      const canDel=o.deletable&&!(o.fixed&&o.fixed.includes(it.v));
+      b.innerHTML=it.l+(canDel?'<span class="rx">✕</span>':'');
+      b.onclick=()=>{sel[key]=it.v;r();refresh();};
+      if(canDel){b.querySelector(".rx").onclick=(e)=>{e.stopPropagation();const ix=norm.indexOf(it);if(ix>=0)norm.splice(ix,1);if(sel[key]===it.v)sel[key]=null;r();refresh();if(o.onDel)o.onDel(it.v);};}
+      box.appendChild(b);});
+    if(o.add){const e=document.createElement("input");e.className="addinp";e.placeholder="+ 직접입력";e.onkeydown=ev=>{if(ev.key==="Enter"){const v=ev.target.value.trim();if(v){if(!norm.some(z=>z.v===v))norm.push({l:v,v:v});sel[key]=v;r();refresh();if(o.persist)o.persist(v);}}};box.appendChild(e);}
+  }
+  box._r=r;r();
+}
+function renderSer(){const box=$("g_ser");box.innerHTML="";
+  PREFIXES.forEach(p=>{const b=document.createElement("button");b.className="chip"+(sel.series===p?" on":"");b.innerHTML=`${p}<span class="rx">✕</span>`;
+    b.querySelector(".rx").onclick=(e)=>{e.stopPropagation();PREFIXES=PREFIXES.filter(x=>x!==p);saveP(PREFIXES);if(sel.series===p)sel.series=null;renderSer();pill();refresh();};
+    b.onclick=()=>{sel.series=(sel.series===p?null:p);renderSer();pill();refresh();};box.appendChild(b);});
+  const e=document.createElement("input");e.className="addinp";e.placeholder="+ 접두어 추가";e.onkeydown=ev=>{if(ev.key==="Enter"){const v=ev.target.value.trim();if(v){if(!PREFIXES.includes(v)){PREFIXES.push(v);saveP(PREFIXES);}sel.series=v;renderSer();pill();refresh();}}};box.appendChild(e);
+}
+function pill(){const p=$("pill");if(sel.series){p.style.display="inline-flex";$("pillt").textContent=sel.series+"-";}else p.style.display="none";}
+$("pillx").onclick=()=>{sel.series=null;renderSer();pill();refresh();};
+function renderSug(){const box=$("g_sug");box.innerHTML="";MATS.forEach((it,i)=>{const b=document.createElement("button");b.className="chip sug";b.innerHTML=`${it.n}<span class="rx">✕</span>`;
+  b.onclick=()=>{$("mat").value=it.n;if(it.service){sel.service=it.service;$("g_svc")._r();}if(Object.prototype.hasOwnProperty.call(it,"division")){sel.division=it.division;$("g_div")._r();}if(it.series){if(!PREFIXES.includes(it.series)){PREFIXES.push(it.series);saveP(PREFIXES);}sel.series=it.series;$("serBox").classList.add("open");}else{sel.series=null;}renderSer();pill();refresh();};
+  b.querySelector(".rx").onclick=(e)=>{e.stopPropagation();MATS.splice(i,1);saveMats();renderSug();};
+  box.appendChild(b);});}
+$("serT").onclick=()=>{$("serBox").classList.toggle("open");};
+$("sugT").onclick=()=>{const o=$("sugBox").classList.toggle("open");$("sugT").textContent=o?"기존 소재명 숨기기 ▴":"기존 소재명 보기 ▾";};
+$("abbr").onchange=e=>{abbrev=e.target.checked;refresh();};
+
+function build(v){return ORDER.map(k=>(v[k]||"").trim()).filter(Boolean).join("_");}
+function plans(){const mat=matTok(),out=[],used={},date=ymm();
+  files.forEach(f=>{const vals={type:typeFor(f.name),division:sel.division||"",service:svcTok(),material:mat,resolution:f.res||"",date};
+    const ext=extOf(f.name);let c=build(vals)+ext,d=2;while(used[c.toLowerCase()]){c=build(vals)+"_dup"+d+ext;d++;}used[c.toLowerCase()]=1;out.push({handle:f.handle,from:f.name,to:c});});
+  return out;}
+function refresh(){
+  const need=!$("mat").value.trim();let t;
+  if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"img",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()})+"  (예시)";}
+  $("pv").textContent=t;
+  const noRes=files.length&&files.some(f=>!f.res);
+  $("msg").textContent=need?"소재명을 입력하세요":(noRes?"일부 파일은 해상도를 못 읽었어요.":"");
+  $("go").disabled=need||!SUPPORTED;
+}
+let filesOpen=false;
+function applyFilesOpen(){
+  $("fileList").style.display=(filesOpen&&files.length)?"block":"none";
+  $("filesT").textContent=(files.length?(filesOpen?"▾ ":"▸ "):"")+"선택된 파일 "+files.length;
+}
+function renderFiles(){
+  const box=$("fileList");
+  if(files.length){
+    box.innerHTML=files.map((f,i)=>`<div class="frow"><button class="x" data-i="${i}">✕</button><span class="nm">${f.name}</span><span class="rs">${f.res||"?"}</span></div>`).join("");
+    box.querySelectorAll(".x").forEach(b=>b.onclick=(e)=>{e.stopPropagation();files.splice(+b.dataset.i,1);renderFiles();refresh();});
+    $("clr").style.display="inline";
+  } else { box.innerHTML=""; $("clr").style.display="none"; filesOpen=false; }
+  applyFilesOpen();
+}
+$("filesT").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
+$("clr").onclick=()=>{files=[];renderFiles();refresh();};
+
+/* ===== File System Access API: 파일 추가 + 이름 변경 ===== */
+const SUPPORTED = !!(window.showOpenFilePicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
+async function ensureRW(handle){try{
+  const opt={mode:"readwrite"};
+  if((await handle.queryPermission(opt))==="granted")return true;
+  return (await handle.requestPermission(opt))==="granted";
+}catch(e){return false;}}
+async function addHandle(h){
+  if(!h||h.kind!=="file")return;
+  for(const f of files){ if(f.handle===h)return; if(f.handle.isSameEntry&&await f.handle.isSameEntry(h))return; }
+  const rec={handle:h,name:h.name,res:""};
+  files.push(rec);renderFiles();refresh();
+  ensureRW(h);
+  try{const file=await h.getFile();rec.res=await getRes(file,h.name);}catch(e){}
+  renderFiles();refresh();
+}
+async function pickFiles(){
+  if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
+  try{
+    const handles=await window.showOpenFilePicker({multiple:true});
+    for(const h of handles){await addHandle(h);}
+  }catch(e){if(e&&e.name!=="AbortError")toast("파일 선택 실패: "+(e.message||e));}
+}
+$("pick").onclick=pickFiles;
+
+/* 드래그앤드롭 */
+(function setupDrop(){
+  const stop=e=>{e.preventDefault();e.stopPropagation();};
+  let depth=0;
+  document.addEventListener("dragenter",e=>{stop(e);depth++;document.body.classList.add("drag");});
+  document.addEventListener("dragover",e=>{stop(e);});
+  document.addEventListener("dragleave",e=>{stop(e);depth=Math.max(0,depth-1);if(depth===0)document.body.classList.remove("drag");});
+  document.addEventListener("drop",async e=>{
+    stop(e);depth=0;document.body.classList.remove("drag");
+    if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
+    const dt=e.dataTransfer;if(!dt)return;
+    const items=[...dt.items].filter(i=>i.kind==="file"&&i.getAsFileSystemHandle);
+    const handles=await Promise.all(items.map(i=>i.getAsFileSystemHandle().catch(()=>null)));
+    for(const h of handles){
+      if(!h)continue;
+      if(h.kind==="directory"){try{for await(const entry of h.values()){if(entry.kind==="file")await addHandle(entry);}}catch(e){}}
+      else await addHandle(h);
+    }
+  });
+})();
+
+$("go").onclick=async()=>{
+  if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
+  if(!$("mat").value.trim()){toast("소재명을 입력하세요");return;}
+  if(!files.length){toast("먼저 파일을 선택하세요");return;}
+  const p=plans();$("go").disabled=true;
+  let ok=0;const errs=[];
+  for(const it of p){
+    try{
+      if(it.to!==it.from){
+        if(it.handle.queryPermission&&(await it.handle.queryPermission({mode:"readwrite"}))!=="granted"){
+          if((await it.handle.requestPermission({mode:"readwrite"}))!=="granted")throw new Error("권한이 거부되었습니다");
+        }
+        await it.handle.move(it.to);
+      }
+      const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0)files[fi].name=it.to;
+      ok++;
+    }catch(e){errs.push(it.from+": "+((e&&e.message)||e));}
+  }
+  renderFiles();refresh();
+  if(ok>0){addMat($("mat").value);renderSug();}
+  if(errs.length)alert(`성공 ${ok}개 / 실패 ${errs.length}개\n\n`+errs.slice(0,8).join("\n"));else toast(`${ok}개 파일 이름을 바꿨어요!`);
+  $("go").disabled=false;refresh();
+};
+
+if(!SUPPORTED){$("warn").classList.add("show");$("pick").disabled=true;}
+chips("g_div",DIVS,"division",{none:true,add:true,persist:saveDiv,deletable:true,fixed:["maugrowth"],onDel:delDiv});
+chips("g_svc",SERVICES,"service",{none:true,add:false});
+renderSer();pill();renderSug();renderFiles();
+$("mat").addEventListener("input",refresh);
+$("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
+refresh();
+</script>
+</body>
+</html>
