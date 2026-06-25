@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>파일명 일괄 변경기</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FF6F0F">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
   :root{
     --bg:#F5F6F8; --card:#fff; --ink:#1B1D22; --mut:#8A8F98; --line:#E8EAED;
@@ -78,6 +81,8 @@
   .toast.show{opacity:1;}
   .dropmask{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(27,29,34,.55);color:#fff;font-size:22px;font-weight:800;z-index:80;pointer-events:none;}
   body.drag .dropmask{display:flex;}
+  .installLink{position:fixed;right:18px;bottom:92px;z-index:50;display:none;font-size:13px;color:var(--mut);text-decoration:none;cursor:pointer;font-family:inherit;}
+  .installLink:hover{color:#1D5FD6;text-decoration:underline;text-decoration-color:#1D5FD6;text-underline-offset:3px;}
 </style>
 </head>
 <body>
@@ -120,6 +125,7 @@
 </div></div>
 <div id="toast" class="toast"></div>
 <div class="dropmask">파일을 여기에 놓으세요</div>
+<a id="install" class="installLink" href="#">앱으로 설치하기</a>
 
 <script>
 const SERVICES=[{l:"중고거래",v:"fleamarket",a:"Fl"},{l:"알바",v:"jobs",a:"Jo"},{l:"모임",v:"group",a:"Gr"},{l:"부동산",v:"realty",a:"Rt"},{l:"중고차",v:"car",a:"Ca"},{l:"비즈니스",v:"LocalAds",a:"Ad"}];
@@ -346,6 +352,15 @@ renderSer();pill();renderSug();renderFiles();
 $("mat").addEventListener("input",refresh);
 $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
 refresh();
+
+/* ===== PWA: 설치 + 서비스워커 ===== */
+if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
+let deferredPrompt=null;
+const installEl=$("install");
+const standalone=window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;if(!standalone)installEl.style.display="block";});
+installEl.onclick=async(ev)=>{ev.preventDefault();if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(_){}deferredPrompt=null;installEl.style.display="none";};
+window.addEventListener("appinstalled",()=>{installEl.style.display="none";deferredPrompt=null;});
 </script>
 </body>
 </html>

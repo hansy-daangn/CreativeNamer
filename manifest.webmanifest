@@ -1,0 +1,16 @@
+{
+  "name": "파일명 일괄 변경기",
+  "short_name": "파일명 변경기",
+  "description": "설치 없이 웹에서 내 컴퓨터의 파일 이름을 규칙에 맞게 일괄 변경",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F5F6F8",
+  "theme_color": "#FF6F0F",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
