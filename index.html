@@ -24,7 +24,12 @@
   .hnav{display:flex;align-items:center;gap:12px;}
   .hlink{font-size:13px;color:var(--mut);cursor:pointer;text-decoration:none;white-space:nowrap;font-family:inherit;}
   .hlink:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
+  .hlink .short{display:none;}
   .hnav .sep{color:var(--line);font-size:12px;}
+  @media (max-width:600px){
+    .hlink .full{display:none;}
+    .hlink .short{display:inline;}
+  }
   main{max-width:720px;margin:0 auto;padding:22px 22px 190px;}
 
   .warn{display:none;background:#FFE8E8;color:#B30000;padding:12px 16px;text-align:center;font-size:13.5px;border-bottom:1px solid #F5C2C2;line-height:1.55;}
@@ -96,9 +101,9 @@
 <header><div class="head">
   <span class="brand">파일명 일괄 변경기</span>
   <nav class="hnav">
-    <a id="grantQuick" class="hlink">한 번에 모든 폴더권한 허용</a>
+    <a id="grantQuick" class="hlink"><span class="full">한 번에 모든 폴더권한 허용</span><span class="short">한 번에 권한 허용</span></a>
     <span class="sep">|</span>
-    <a id="grantCustom" class="hlink">직접 폴더권한 허용</a>
+    <a id="grantCustom" class="hlink"><span class="full">직접 폴더권한 허용</span><span class="short">직접 권한 허용</span></a>
   </nav>
 </div></header>
 <main>
