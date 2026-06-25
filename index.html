@@ -31,15 +31,9 @@
   .pick:hover{background:#EA6300;}
   .pick .sub{display:block;font-size:12.5px;font-weight:600;opacity:.85;margin-top:4px;}
 
-  .perm .pdesc{font-size:12.5px;color:var(--mut);line-height:1.55;margin-bottom:11px;}
-  .perm .pdesc b{color:var(--ink);font-weight:700;}
-  .permlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;}
-  .dirtag{display:inline-flex;align-items:center;gap:7px;background:#EAF2FF;color:var(--blue);border-radius:8px;padding:6px 8px 6px 10px;font-size:12.5px;font-weight:600;}
-  .dirtag.off{background:#F0F1F4;color:var(--mut);}
-  .dirtag .dx{border:none;background:none;color:inherit;opacity:.55;cursor:pointer;font-size:11px;padding:0;font-family:inherit;}
-  .dirtag .dx:hover{opacity:1;}
-  .dirtag .dr{border:none;background:var(--blue);color:#fff;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;}
-  .dirnone{font-size:12.5px;color:var(--mut);}
+  .permrow{display:flex;gap:8px;margin-top:8px;}
+  .minibtn{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 10px;font-size:12.5px;font-weight:600;color:var(--chipInk);cursor:pointer;font-family:inherit;}
+  .minibtn:hover{background:#F0F1F4;}
 
   .files{margin:14px 0 0;}
   .files .hd{display:flex;align-items:center;margin-bottom:8px;}
@@ -69,8 +63,6 @@
   .chip.none{color:var(--mut);}
   .chip .rx{margin-left:8px;font-size:11px;opacity:.5;}
   .chip.sug{background:var(--blueBg);color:var(--blue);}
-  .chip.grant{background:var(--blueBg);color:var(--blue);font-weight:700;}
-  .chip.grant:hover{background:#E0ECFF;}
   .addinp{width:130px;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:14px;outline:none;font-family:inherit;}
   .addinp:focus{border-color:var(--ac);}
   input.txt{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:16px;outline:none;font-family:inherit;}
@@ -103,12 +95,9 @@
 <header><div class="head">파일명 일괄 변경기</div></header>
 <main>
   <button id="pick" class="pick">＋ 파일 선택<span class="sub">또는 파일을 이 화면에 드래그앤드롭</span></button>
-
-  <div class="field perm">
-    <div class="lab"><span>폴더 권한</span><span class="opt">한 번만 허용하면 계속 유지돼요</span></div>
-    <div class="pdesc">자주 쓰는 폴더를 한 번 허용해두면, 그 폴더(하위 폴더 포함) 안의 파일은 드래그만 해도 <b>추가 확인 없이</b> 바로 바뀌어요. 컴퓨터를 꺼다 켜거나 창을 닫아도 유지됩니다.</div>
-    <div class="chips" id="permQuick"></div>
-    <div id="permList" class="permlist"></div>
+  <div class="permrow">
+    <button id="grantQuick" class="minibtn">📁 한 번에 폴더 권한 허용</button>
+    <button id="grantCustom" class="minibtn">작업폴더 직접 지정</button>
   </div>
 
   <div class="files">
@@ -283,7 +272,6 @@ $("clr").onclick=()=>{files=[];renderFiles();updateNeedGrant();refresh();};
 
 /* ===== File System Access API + 폴더 권한 관리 ===== */
 const SUPPORTED = !!(window.showOpenFilePicker && window.showDirectoryPicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
-const COMMON=[{id:"desktop",l:"바탕화면"},{id:"downloads",l:"다운로드"},{id:"documents",l:"문서"},{id:"pictures",l:"사진"}];
 let grantedDirs=[];
 
 async function ensureRW(handle){try{
@@ -322,35 +310,33 @@ function updateNeedGrant(){
 }
 
 async function addDir(handle){
-  for(const d of grantedDirs){try{if(d.isSameEntry&&await d.isSameEntry(handle)){toast("이미 허용된 폴더예요");return;}}catch(e){}}
+  for(const d of grantedDirs){try{if(d.isSameEntry&&await d.isSameEntry(handle)){await ensureRW(d);await recheckCoverage();toast("폴더 권한을 갱신했어요");return;}}catch(e){}}
   if(!await ensureRW(handle)){toast("폴더 권한이 거부됐어요");return;}
-  grantedDirs.push(handle);await saveGrantedDirs();await renderDirs();await recheckCoverage();
+  grantedDirs.push(handle);await saveGrantedDirs();await recheckCoverage();
   toast(`'${handle.name}' 폴더를 허용했어요`);
 }
-async function removeDir(i){grantedDirs.splice(i,1);await saveGrantedDirs();await renderDirs();await recheckCoverage();}
-async function quickGrant(wk){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
-  try{const h=await window.showDirectoryPicker({mode:"readwrite",startIn:wk});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
 async function grantCustom(){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
   try{const h=await window.showDirectoryPicker({mode:"readwrite"});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
 async function grantParentOf(fileHandle){if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
   try{const h=await window.showDirectoryPicker({mode:"readwrite",startIn:fileHandle});await addDir(h);}catch(e){if(e&&e.name!=="AbortError")toast("폴더 허용이 취소됐어요");}}
-
-async function renderDirs(){
-  const q=$("permQuick");q.innerHTML="";
-  COMMON.forEach(c=>{const b=document.createElement("button");b.className="chip grant";b.textContent=c.l+" 허용";b.onclick=()=>quickGrant(c.id);q.appendChild(b);});
-  const cb=document.createElement("button");cb.className="chip";cb.textContent="＋ 다른 폴더 직접 허용";cb.onclick=grantCustom;q.appendChild(cb);
-  const l=$("permList");
-  if(grantedDirs.length){
-    const parts=await Promise.all(grantedDirs.map(async(d,i)=>{
-      let st="prompt";try{st=await d.queryPermission({mode:"readwrite"});}catch(e){}
-      const need=st!=="granted";
-      return `<span class="dirtag${need?' off':''}">📁 ${d.name}${need?` <button class="dr" data-i="${i}">재허용</button>`:""}<button class="dx" data-i="${i}">✕</button></span>`;
-    }));
-    l.innerHTML=parts.join("");
-    l.querySelectorAll(".dx").forEach(b=>b.onclick=()=>removeDir(+b.dataset.i));
-    l.querySelectorAll(".dr").forEach(b=>b.onclick=async()=>{const d=grantedDirs[+b.dataset.i];if(await ensureRW(d)){await saveGrantedDirs();await renderDirs();await recheckCoverage();}});
-  } else l.innerHTML=`<span class="dirnone">아직 허용된 폴더가 없어요. 위에서 자주 쓰는 폴더를 한 번 허용해 두세요.</span>`;
+let quickPhase=0;
+const QUICK=[{id:"desktop",l:"바탕화면"},{id:"downloads",l:"다운로드"}];
+async function quickGrantAll(){
+  if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
+  for(let s=quickPhase;s<QUICK.length;s++){
+    try{
+      const h=await window.showDirectoryPicker({mode:"readwrite",startIn:QUICK[s].id});
+      await addDir(h);quickPhase=s+1;
+    }catch(e){
+      quickPhase=s;
+      if(e&&e.name==="AbortError")return;
+      toast(QUICK[s].l+" 폴더는 버튼을 한 번 더 눌러 허용해 주세요");return;
+    }
+  }
+  quickPhase=0;toast("폴더 권한 허용 완료!");
 }
+$("grantQuick").onclick=quickGrantAll;
+$("grantCustom").onclick=grantCustom;
 
 async function addHandle(h){
   if(!h||h.kind!=="file")return;
@@ -421,7 +407,7 @@ renderSer();pill();renderSug();renderFiles();
 $("mat").addEventListener("input",refresh);
 $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
 refresh();
-(async()=>{try{await loadGrantedDirs();}catch(e){}await renderDirs();})();
+(async()=>{try{await loadGrantedDirs();}catch(e){}await recheckCoverage();})();
 
 /* ===== PWA: 설치 + 서비스워커 ===== */
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
