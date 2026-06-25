@@ -76,7 +76,6 @@
   .gobtn:hover{background:#0F1115;}
   .gobtn:disabled{opacity:.5;cursor:not-allowed;}
   .gobtn .body{color:#FFD9BD;font-size:14.5px;line-height:1.7;white-space:pre-line;max-height:84px;overflow:auto;font-family:ui-monospace,"D2Coding",Consolas,monospace;font-weight:600;}
-  .gobtn .msg{color:#FF9D9D;font-size:12px;margin-top:5px;font-weight:600;}
   .gobtn .goline{display:flex;align-items:center;gap:7px;color:#fff;font-weight:800;font-size:15px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12);}
   .gobtn .goline .arr{color:var(--orange);font-size:18px;line-height:1;}
   .toast{position:fixed;left:50%;bottom:210px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
@@ -128,8 +127,7 @@
 <div class="dock"><div class="din">
   <button id="go" class="gobtn">
     <div id="pv" class="body"></div>
-    <div id="msg" class="msg"></div>
-    <div class="goline"><span class="arr">→</span> 이대로 바꾸기</div>
+    <div id="goline" class="goline"><span class="arr">→</span> 이대로 바꾸기</div>
   </button>
 </div></div>
 <div id="toast" class="toast"></div>
@@ -139,6 +137,9 @@
 <script>
 const SERVICES=[{l:"중고거래",v:"fleamarket",a:"Fl"},{l:"알바",v:"jobs",a:"Jo"},{l:"모임",v:"group",a:"Gr"},{l:"부동산",v:"realty",a:"Rt"},{l:"중고차",v:"car",a:"Ca"},{l:"비즈니스",v:"LocalAds",a:"Ad"}];
 const ABBR=Object.fromEntries(SERVICES.map(s=>[s.v,s.a]));
+try{const _cs=JSON.parse(localStorage.getItem("namepresso_svcs"));if(Array.isArray(_cs))_cs.forEach(v=>{if(!SERVICES.some(s=>s.v===v))SERVICES.push({l:v,v:v});});}catch(e){}
+function saveSvc(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_svcs"))||[];}catch(e){c=[];}if(!c.includes(v)){c.push(v);localStorage.setItem("namepresso_svcs",JSON.stringify(c));}}
+function delSvc(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_svcs"))||[];}catch(e){c=[];}c=c.filter(x=>x!==v);localStorage.setItem("namepresso_svcs",JSON.stringify(c));}
 const DIVS=["maugrowth"];
 try{const _cd=JSON.parse(localStorage.getItem("namepresso_divs"));if(Array.isArray(_cd))_cd.forEach(d=>{if(!DIVS.includes(d))DIVS.push(d);});}catch(e){}
 function saveDiv(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_divs"))||[];}catch(e){c=[];}if(!c.includes(v)){c.push(v);localStorage.setItem("namepresso_divs",JSON.stringify(c));}}
@@ -249,8 +250,8 @@ function refresh(){
   const need=!$("mat").value.trim();let t;
   if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"img",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()})+"  (예시)";}
   $("pv").textContent=t;
-  const noRes=files.length&&files.some(f=>!f.res);
-  $("msg").textContent=need?"소재명을 입력하세요":(noRes?"일부 파일은 해상도를 못 읽었어요.":"");
+  if(need)$("goline").textContent="소재명을 입력하세요";
+  else $("goline").innerHTML='<span class="arr">→</span> 이대로 바꾸기';
   $("go").disabled=need||!SUPPORTED;
 }
 let filesOpen=false;
@@ -371,7 +372,7 @@ $("go").onclick=async()=>{
 
 if(!SUPPORTED){$("warn").classList.add("show");$("pick").disabled=true;}
 chips("g_div",DIVS,"division",{none:true,add:true,persist:saveDiv,deletable:true,fixed:["maugrowth"],onDel:delDiv});
-chips("g_svc",SERVICES,"service",{none:true,add:false});
+chips("g_svc",SERVICES,"service",{none:true,add:true,persist:saveSvc,deletable:true,fixed:["fleamarket","jobs","group","realty","car","LocalAds"],onDel:delSvc});
 renderSer();pill();renderSug();renderFiles();
 $("mat").addEventListener("input",refresh);
 $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
