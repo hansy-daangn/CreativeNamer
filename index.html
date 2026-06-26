@@ -249,11 +249,11 @@ function plans(){const mat=matTok(),out=[],used={},date=ymm();
   return out;}
 function refresh(){
   const need=!$("mat").value.trim();let t;
-  if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"img",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()})+"  (예시)";}
+  if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"img",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()});}
   $("pv").textContent=t;
   if(need){$("goline").textContent="소재명을 입력하세요";$("goline").classList.add("warn");}
   else{$("goline").innerHTML='<span class="arr">→</span> 이대로 바꾸기';$("goline").classList.remove("warn");}
-  $("go").disabled=need||!SUPPORTED;
+  $("go").disabled=!SUPPORTED;
 }
 let filesOpen=false;
 function applyFilesOpen(){
