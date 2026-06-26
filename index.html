@@ -77,7 +77,7 @@
   .gobtn:disabled{opacity:.5;cursor:not-allowed;}
   .gobtn .body{color:#FFD9BD;font-size:14.5px;line-height:1.7;white-space:pre-line;max-height:84px;overflow:auto;font-family:ui-monospace,"D2Coding",Consolas,monospace;font-weight:600;}
   .gobtn .goline{display:flex;align-items:center;gap:7px;color:#fff;font-weight:800;font-size:15px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12);}
-  .gobtn .goline.warn{color:#FF8A8A;}
+  .gobtn .goline.gw{color:#FF8A8A;}
   .gobtn .goline .arr{color:var(--orange);font-size:18px;line-height:1;}
   .toast{position:fixed;left:50%;bottom:210px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
   .toast.show{opacity:1;}
@@ -173,7 +173,6 @@ function svcTok(){return sel.service?(abbrev?(ABBR[sel.service]||sel.service):se
 function camel(s){const p=s.trim().split(/[\s_]+/).filter(Boolean);if(p.length<=1)return s.trim();return p[0].charAt(0).toLowerCase()+p[0].slice(1)+p.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join("");}
 function matTok(){const m=$("mat").value.trim();if(!m)return"";return sel.series?`${sel.series}-${m}`:m;}
 
-/* ===== 해상도 추출 (브라우저 측, renamer.ps1 로직 포팅) ===== */
 function BE32(b,o){return b[o]*16777216+b[o+1]*65536+b[o+2]*256+b[o+3];}
 function BE16(b,o){return b[o]*256+b[o+1];}
 function LE16(b,o){return b[o]+b[o+1]*256;}
@@ -251,8 +250,8 @@ function refresh(){
   const need=!$("mat").value.trim();let t;
   if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"img",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()});}
   $("pv").textContent=t;
-  if(need){$("goline").textContent="소재명을 입력하세요";$("goline").classList.add("warn");}
-  else{$("goline").innerHTML='<span class="arr">→</span> 이대로 바꾸기';$("goline").classList.remove("warn");}
+  if(need){$("goline").textContent="소재명을 입력하세요";$("goline").classList.add("gw");}
+  else{$("goline").innerHTML='<span class="arr">→</span> 이대로 바꾸기';$("goline").classList.remove("gw");}
   $("go").disabled=!SUPPORTED;
 }
 let filesOpen=false;
@@ -272,7 +271,6 @@ function renderFiles(){
 $("filesT").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
 $("clr").onclick=()=>{files=[];renderFiles();refresh();};
 
-/* ===== File System Access API ===== */
 const SUPPORTED = !!(window.showOpenFilePicker && window.showDirectoryPicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
 let grantedDirs=[];
 
@@ -282,7 +280,6 @@ async function ensureRW(handle){try{
   return (await handle.requestPermission(opt))==="granted";
 }catch(e){return false;}}
 
-/* IndexedDB: 허용 폴더 핸들 영구 저장 (선택적 가속 — 미리 허용해두면 그 폴더 파일은 확인창 없이 변경) */
 const IDB_DB="namerfs",IDB_STORE="kv",DIRS_KEY="grantedDirs";
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(IDB_DB,1);r.onupgradeneeded=()=>{r.result.createObjectStore(IDB_STORE);};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function idbGet(k){try{const db=await idb();return await new Promise((res,rej)=>{const t=db.transaction(IDB_STORE,"readonly").objectStore(IDB_STORE).get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error);});}catch(e){return undefined;}}
@@ -326,7 +323,6 @@ async function pickFiles(){
 }
 $("pick").onclick=pickFiles;
 
-/* 드래그앤드롭: 파일 → 변경 대상 추가 / 폴더 → 권한 허용 */
 (function setupDrop(){
   const stop=e=>{e.preventDefault();e.stopPropagation();};
   let depth=0;
@@ -380,7 +376,6 @@ $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refre
 refresh();
 (async()=>{try{await loadGrantedDirs();}catch(e){}})();
 
-/* ===== PWA: 설치 + 서비스워커 ===== */
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
 let deferredPrompt=null;
 const installEl=$("install");
