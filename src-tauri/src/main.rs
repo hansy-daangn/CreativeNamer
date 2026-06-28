@@ -362,6 +362,15 @@ fn open_data_folder() -> Result<(), String> {
     Ok(())
 }
 
+/// Return a file's last-modified time as milliseconds since the Unix epoch.
+#[tauri::command]
+fn file_mtime(path: String) -> Option<f64> {
+    let meta = fs::metadata(&path).ok()?;
+    let mt = meta.modified().ok()?;
+    let dur = mt.duration_since(std::time::UNIX_EPOCH).ok()?;
+    Some(dur.as_millis() as f64)
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -373,7 +382,8 @@ fn main() {
             import_file,
             export_materials,
             reveal_in_folder,
-            open_data_folder
+            open_data_folder,
+            file_mtime
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
