@@ -11,6 +11,7 @@
     --bg:#eceae6; --card:#ffffff; --ink:#1b1c1e; --sub:#8a8d92;
     --line:#e7e6e2; --line2:#edece9; --point:#3a6ff0;
     --chip:#f4f3f0; --chip-line:#e4e2dd; --strip:#1c1d20; --strip-line:#33353a; --req:#e0533d;
+    --mw:460px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,-apple-system,sans-serif;
@@ -22,17 +23,15 @@
   .warn.show{display:block;}
   .warn b{font-weight:800;}
 
-  .page{padding:26px 20px;}
-  .card{width:360px;max-width:96vw;margin:0 auto;resize:both;overflow:hidden;
-    min-width:300px;min-height:440px;max-height:calc(100vh - 52px);
-    display:flex;flex-direction:column;background:var(--card);
-    border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 34px -18px rgba(20,22,28,.28);}
-  .body{flex:1;min-height:0;overflow-y:auto;padding:26px 26px 22px;}
-
-  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;}
+  /* top bar (un-bundled from content) */
+  .hdr{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);}
+  .hdrin{max-width:var(--mw);margin:0 auto;padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
   .title{font-size:18px;font-weight:700;letter-spacing:-.02em;}
   .perm{font-size:12.5px;color:var(--sub);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;}
   .perm:hover{color:var(--point);border-color:var(--point);}
+
+  /* content column — fluid, resizes with the window */
+  .wrap{max-width:var(--mw);margin:0 auto;padding:24px 22px 178px;}
 
   .field{margin-bottom:18px;}
   .lab{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:9px;}
@@ -93,14 +92,15 @@
     font-size:12px;font-weight:600;color:var(--point);cursor:pointer;display:block;padding:0;}
   .minitoggle:hover{opacity:.78;}
 
-  /* dark preview strip */
-  .strip{flex:none;background:var(--strip);padding:18px 22px 22px;}
-  .striplab{font-size:11px;color:#8b8e95;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:9px;}
+  /* dark preview bar — fixed at window bottom, separate from the form */
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--strip);}
+  .dockin{max-width:var(--mw);margin:0 auto;padding:14px 22px 16px;}
+  .striplab{font-size:11px;color:#8b8e95;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;}
   .preview{font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:13px;color:#f3f4f6;
     background:#26282c;border:1px solid var(--strip-line);border-radius:10px;padding:12px 14px;
-    white-space:pre-line;line-height:1.7;max-height:96px;overflow:auto;margin-bottom:14px;}
+    white-space:pre-line;line-height:1.7;max-height:84px;overflow:auto;margin-bottom:12px;}
   .preview b{color:#8fb0ff;font-weight:600;}
-  .apply{width:100%;min-height:46px;border:0;border-radius:11px;background:var(--point);color:#fff;
+  .apply{width:100%;min-height:44px;border:0;border-radius:11px;background:var(--point);color:#fff;
     font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;padding:8px 14px;
     display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s;letter-spacing:-.01em;}
   .apply:hover{filter:brightness(1.07);}
@@ -109,75 +109,77 @@
   .goline.gw{color:#FFD7D7;}
   .arr{font-size:15px;line-height:1;}
 
-  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
+  .toast{position:fixed;left:50%;bottom:188px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
   .toast.show{opacity:1;}
   .dropmask{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(27,29,34,.55);color:#fff;font-size:22px;font-weight:800;z-index:80;pointer-events:none;}
   body.drag .dropmask{display:flex;}
-  .installLink{position:fixed;right:18px;bottom:18px;z-index:50;display:none;font-size:13px;color:var(--sub);text-decoration:none;cursor:pointer;font-family:inherit;}
+  .installLink{position:fixed;right:18px;bottom:180px;z-index:50;display:none;font-size:13px;color:var(--sub);text-decoration:none;cursor:pointer;font-family:inherit;}
   .installLink:hover{color:var(--point);text-decoration:underline;text-underline-offset:3px;}
 
-  @media (max-width:380px){.body{padding:22px 18px 18px;}.strip{padding:16px 18px 18px;}}
+  @media (max-width:380px){.wrap{padding:20px 16px 178px;}}
 </style>
 </head>
 <body>
 <div id="warn" class="warn">⚠️ 이 브라우저에서는 파일 이름 변경이 동작하지 않습니다. <b>Chrome</b> 또는 <b>Microsoft Edge</b> 최신 버전으로 접속해 주세요. (File System Access API 필요)</div>
 
-<div class="page">
-<main class="card">
-  <div class="body">
-    <div class="head">
-      <h1 class="title">파일명 일괄 변경기</h1>
-      <a id="grantCustom" class="perm">폴더 권한 허용하기</a>
-    </div>
+<header class="hdr"><div class="hdrin">
+  <h1 class="title">파일명 일괄 변경기</h1>
+  <a id="grantCustom" class="perm">폴더 권한 허용하기</a>
+</div></header>
 
-    <div class="field">
-      <div class="dropbox">
-        <button id="pick" class="addfile" type="button">＋ 파일 선택 · 드래그앤드롭</button>
-        <div class="picked">
-          <div class="pickbar">
-            <button id="filesT" class="picksum" type="button">선택된 파일 0</button>
-            <button id="clr" class="clr" type="button" style="display:none">모두 지우기</button>
-          </div>
-          <div id="fileList"></div>
+<main class="wrap">
+  <div class="field">
+    <div class="dropbox">
+      <button id="pick" class="addfile" type="button">＋ 파일 선택 · 드래그앤드롭</button>
+      <div class="picked">
+        <div class="pickbar">
+          <button id="filesT" class="picksum" type="button">선택된 파일 0</button>
+          <button id="clr" class="clr" type="button" style="display:none">모두 지우기</button>
         </div>
+        <div id="fileList"></div>
       </div>
-    </div>
-
-    <div class="field">
-      <div class="lab"><span>구분</span></div>
-      <div id="g_div" class="chips"></div>
-    </div>
-
-    <div class="field">
-      <div class="lab"><span>서비스</span><span id="abbr" class="togchip" role="button" tabindex="0">짧게 표기해요</span></div>
-      <div id="g_svc" class="chips"></div>
-    </div>
-
-    <div class="field">
-      <div class="lab"><span>소재명<span class="req">*</span></span><span id="serT" class="togchip" role="button" tabindex="0">시리즈 소재예요</span></div>
-      <div class="pillrow">
-        <span class="pill" id="pill"><span id="pillt"></span><span class="px" id="pillx">✕</span></span>
-        <input id="mat" class="txt" placeholder="소재명을 입력하세요" autocomplete="off">
-      </div>
-      <div id="serBox" class="panelbox"><div id="g_ser" class="chips"></div></div>
-      <button id="sugT" class="minitoggle" type="button">▸ 기존 소재명 보기</button>
-      <div id="sugBox" class="panelbox"><div id="g_sug" class="chips"></div></div>
     </div>
   </div>
 
-  <div class="strip">
-    <div class="striplab">결과 미리보기</div>
-    <div id="pv" class="preview"></div>
-    <button id="go" class="apply"><span id="goline" class="goline">이대로 바꾸기 <span class="arr">→</span></span></button>
+  <div class="field">
+    <div class="lab"><span>구분</span></div>
+    <div id="g_div" class="chips"></div>
+  </div>
+
+  <div class="field">
+    <div class="lab"><span>서비스</span><span id="abbr" class="togchip" role="button" tabindex="0">짧게 표기해요</span></div>
+    <div id="g_svc" class="chips"></div>
+  </div>
+
+  <div class="field">
+    <div class="lab"><span>소재명<span class="req">*</span></span><span id="serT" class="togchip" role="button" tabindex="0">시리즈 소재예요</span></div>
+    <div class="pillrow">
+      <span class="pill" id="pill"><span id="pillt"></span><span class="px" id="pillx">✕</span></span>
+      <input id="mat" class="txt" placeholder="소재명을 입력하세요" autocomplete="off">
+    </div>
+    <div id="serBox" class="panelbox"><div id="g_ser" class="chips"></div></div>
+    <button id="sugT" class="minitoggle" type="button">▸ 기존 소재명 보기</button>
+    <div id="sugBox" class="panelbox"><div id="g_sug" class="chips"></div></div>
   </div>
 </main>
-</div>
+
+<div class="dock"><div class="dockin">
+  <div class="striplab">결과 미리보기</div>
+  <div id="pv" class="preview"></div>
+  <button id="go" class="apply"><span id="goline" class="goline">이대로 바꾸기 <span class="arr">→</span></span></button>
+</div></div>
 
 <div id="toast" class="toast"></div>
 <div class="dropmask">파일을 여기에 놓으세요</div>
 <a id="install" class="installLink" href="#">앱으로 설치하기</a>
 
 <script>
+/* ===== Supabase (소재명 공유 저장) ===== */
+const SB_URL="https://newoydegfbnnqujgiips.supabase.co";
+const SB_KEY="sb_publishable_6remFFz9oGKffdlRakvdfg_OOLp6zYL";
+const SB_TBL=SB_URL+"/rest/v1/creative_names";
+const SB_H={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
+
 const SERVICES=[{l:"중고거래",v:"fleamarket",a:"Fl"},{l:"알바",v:"jobs",a:"Jo"},{l:"모임",v:"group",a:"Gr"},{l:"부동산",v:"realty",a:"Rt"},{l:"중고차",v:"car",a:"Ca"},{l:"비즈니스",v:"LocalAds",a:"Ad"}];
 const ABBR=Object.fromEntries(SERVICES.map(s=>[s.v,s.a]));
 try{const _cs=JSON.parse(localStorage.getItem("namepresso_svcs"));if(Array.isArray(_cs))_cs.forEach(v=>{if(!SERVICES.some(s=>s.v===v))SERVICES.push({l:v,v:v});});}catch(e){}
@@ -209,8 +211,29 @@ function loadMats(){try{const a=JSON.parse(localStorage.getItem(MK));if(Array.is
   localStorage.setItem(MK,JSON.stringify(seed));return seed;}
 function saveMats(){try{localStorage.setItem(MK,JSON.stringify(MATS));}catch(e){}}
 let MATS=loadMats();
+
+/* Supabase: 활성 목록 불러오기 → 로컬 캐시 갱신 후 다시 그림 */
+async function pullMats(){
+  try{
+    const r=await fetch(SB_TBL+"?active=eq.true&select=name,service,series,division&order=updated_at.desc",{headers:SB_H});
+    if(!r.ok)return;
+    const rows=await r.json();
+    if(!Array.isArray(rows))return;
+    MATS=rows.map(x=>{const o={n:x.name};if(x.service)o.service=x.service;if(x.series)o.series=x.series;if(x.division!=null)o.division=x.division;return o;});
+    saveMats();renderSug();
+  }catch(e){}
+}
+/* Supabase: 추가/갱신(업서트) */
+function pushMat(rec){
+  const body={name:rec.n,name_key:rec.n.toLowerCase(),service:rec.service||null,series:rec.series||null,division:(rec.division!=null?rec.division:null),active:true,updated_at:new Date().toISOString()};
+  fetch(SB_TBL+"?on_conflict=name_key",{method:"POST",headers:Object.assign({"Prefer":"resolution=merge-duplicates,return=minimal"},SB_H),body:JSON.stringify(body)}).catch(()=>{});
+}
+/* Supabase: 소프트 삭제(목록에서 숨김, DB에는 active=false로 남김) */
+function softDeleteMat(name){
+  fetch(SB_TBL+"?name_key=eq."+encodeURIComponent(name.toLowerCase()),{method:"PATCH",headers:Object.assign({"Prefer":"return=minimal"},SB_H),body:JSON.stringify({active:false,updated_at:new Date().toISOString()})}).catch(()=>{});
+}
 function addMat(n){n=(n||"").trim();if(!n)return;const rec={n:n};if(sel.service)rec.service=sel.service;rec.division=sel.division;if(sel.series)rec.series=sel.series;
-  const i=MATS.findIndex(m=>m.n.toLowerCase()===n.toLowerCase());if(i>=0)MATS[i]=rec;else MATS.unshift(rec);saveMats();}
+  const i=MATS.findIndex(m=>m.n.toLowerCase()===n.toLowerCase());if(i>=0)MATS[i]=rec;else MATS.unshift(rec);saveMats();pushMat(rec);}
 function svcTok(){return sel.service?(abbrev?(ABBR[sel.service]||sel.service):sel.service):"";}
 function camel(s){const p=s.trim().split(/[\s_]+/).filter(Boolean);if(p.length<=1)return s.trim();return p[0].charAt(0).toLowerCase()+p[0].slice(1)+p.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join("");}
 function matTok(){const m=$("mat").value.trim();if(!m)return"";return sel.series?`${sel.series}-${m}`:m;}
@@ -278,7 +301,7 @@ function pill(){const p=$("pill");if(sel.series){p.style.display="inline-flex";$
 $("pillx").onclick=()=>{sel.series=null;renderSer();pill();refresh();};
 function renderSug(){const box=$("g_sug");box.innerHTML="";MATS.forEach((it,i)=>{const b=document.createElement("button");b.className="chip sug";b.innerHTML=`${it.n}<span class="rx">✕</span>`;
   b.onclick=()=>{$("mat").value=it.n;if(it.service){sel.service=it.service;$("g_svc")._r();}if(Object.prototype.hasOwnProperty.call(it,"division")){sel.division=it.division;$("g_div")._r();}if(it.series){if(!PREFIXES.includes(it.series)){PREFIXES.push(it.series);saveP(PREFIXES);}sel.series=it.series;$("serBox").classList.add("open");$("serT").classList.add("on");}else{sel.series=null;}renderSer();pill();refresh();};
-  b.querySelector(".rx").onclick=(e)=>{e.stopPropagation();MATS.splice(i,1);saveMats();renderSug();};
+  b.querySelector(".rx").onclick=(e)=>{e.stopPropagation();const nm=MATS[i].n;MATS.splice(i,1);saveMats();renderSug();softDeleteMat(nm);};
   box.appendChild(b);});}
 $("serT").onclick=()=>{const o=$("serBox").classList.toggle("open");$("serT").classList.toggle("on",o);};
 $("serT").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("serT").onclick();}};
@@ -423,6 +446,7 @@ $("mat").addEventListener("input",refresh);
 $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
 refresh();
 (async()=>{try{await loadGrantedDirs();}catch(e){}})();
+pullMats();
 
 /* ===== PWA: 설치 + 서비스워커 ===== */
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
