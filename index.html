@@ -11,7 +11,8 @@
     --bg:#eceae6; --card:#ffffff; --ink:#1b1c1e; --sub:#8a8d92;
     --line:#e7e6e2; --line2:#edece9; --point:#3a6ff0;
     --chip:#f4f3f0; --chip-line:#e4e2dd; --strip:#1c1d20; --strip-line:#33353a; --req:#e0533d;
-    --mw:460px;
+    /* 콘텐츠 너비: 기본 창에선 창에 꽉 차고(=지금 너비), 창을 키우면 이 값까지 반응형으로 넓어짐 */
+    --mw:820px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,-apple-system,sans-serif;
@@ -35,6 +36,8 @@
   .wrap{max-width:var(--mw);margin:0 auto;padding:24px 22px 178px;}
 
   .field{margin-bottom:18px;}
+  /* 각 입력 묶음(구분/서비스/소재명) 사이 구분선 + 여백 */
+  .wrap .field + .field{border-top:1px solid var(--line2);padding-top:18px;}
   .lab{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:9px;}
   .lab .req{color:var(--req);margin-left:2px;}
 
@@ -108,7 +111,7 @@
   .filepanel .frow .nm{color:#c7cace;}
   .filepanel .frow .rs{color:#8b8e95;}
   .filepanel .frow .x{color:#9a9da2;}
-  .preview{font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:13px;color:#f3f4f6;
+  .preview{font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:12px;color:#f3f4f6;
     background:#26282c;border:1px solid var(--strip-line);border-radius:10px;padding:12px 14px;
     white-space:pre-line;line-height:1.7;max-height:84px;overflow:auto;margin-bottom:12px;}
   .preview b{color:#8fb0ff;font-weight:600;}
@@ -151,7 +154,7 @@
   </div>
 
   <div class="field">
-    <div class="lab"><span>소재명<span class="req">*</span></span><span id="serT" class="togchip" role="button" tabindex="0">시리즈 소재예요</span></div>
+    <div class="lab"><span>소재명</span><span id="serT" class="togchip" role="button" tabindex="0">시리즈 소재예요</span></div>
     <div class="pillrow">
       <span class="pill" id="pill"><span id="pillt"></span><span class="px" id="pillx">✕</span></span>
       <input id="mat" class="txt" placeholder="소재명을 입력하세요" autocomplete="off">
@@ -324,11 +327,10 @@ function plans(){const mat=matTok(),out=[],used={};const useM=!!($("dateMtime")&
     const ext=extOf(f.name);let c=build(vals)+ext,d=2;while(used[c.toLowerCase()]){c=build(vals)+"_dup"+d+ext;d++;}used[c.toLowerCase()]=1;out.push({handle:f.handle,path:f.path,from:f.name,to:c});});
   return out;}
 function refresh(){
-  const need=!$("mat").value.trim();let t;
+  let t;
   if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"img",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()});}
   $("pv").textContent=t;
-  if(need){$("goline").textContent="소재명을 입력하세요";$("goline").classList.add("gw");}
-  else{$("goline").innerHTML='이대로 바꾸기 <span class="arr">→</span>';$("goline").classList.remove("gw");}
+  $("goline").innerHTML='이대로 바꾸기 <span class="arr">→</span>';$("goline").classList.remove("gw");
   $("go").disabled=!SUPPORTED;
 }
 let filesOpen=false;
@@ -455,7 +457,6 @@ function setupNativeDrop(){
 
 $("go").onclick=async()=>{
   if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
-  if(!$("mat").value.trim()){toast("소재명을 입력하세요");return;}
   if(!files.length){toast("먼저 파일을 선택하세요");return;}
   const p=plans();$("go").disabled=true;
   let ok=0;const errs=[],done=[];
@@ -508,7 +509,7 @@ if(NATIVE){
     const W=T.window&&T.window.getCurrentWindow&&T.window.getCurrentWindow();
     const LS=T.window&&T.window.LogicalSize;
     if(W&&LS){const m=60,aw=(self.screen&&screen.availWidth)||1280,ah=(self.screen&&screen.availHeight)||720;
-      const w=Math.max(360,Math.min(460,aw-m)),h=Math.max(520,Math.min(680,ah-m));
+      const w=Math.max(360,Math.min(460,aw-m)),h=Math.max(520,Math.min(650,ah-m));
       W.setSize(new LS(w,h)).then(()=>{if(W.center)W.center();}).catch(()=>{});}
   }catch(e){}
   /* 헤더 링크: 소재폴더(열기) · 내보내기(공유 파일) */
@@ -541,7 +542,7 @@ let deferredPrompt=null;
 const installEl=$("install");
 const standalone=window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches;
 /* 앱(설치형)으로 처음 열 때만 권장 크기로 — 여백 최소 + 스크롤 없음. 이후엔 사용자가 조절한 크기 유지 */
-if(!NATIVE && standalone){try{if(!localStorage.getItem("namepresso_sized")){window.resizeTo(480,700);localStorage.setItem("namepresso_sized","1");}}catch(e){}}
+if(!NATIVE && standalone){try{if(!localStorage.getItem("namepresso_sized")){window.resizeTo(480,670);localStorage.setItem("namepresso_sized","1");}}catch(e){}}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;if(!standalone)installEl.style.display="block";});
 installEl.onclick=async(ev)=>{ev.preventDefault();if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(_){}deferredPrompt=null;installEl.style.display="none";};
 window.addEventListener("appinstalled",()=>{installEl.style.display="none";deferredPrompt=null;});
