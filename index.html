@@ -52,7 +52,7 @@
   .picksum:hover{color:var(--sub);}
   .clr{border:0;background:none;color:#b9bcc1;font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px;}
   .clr:hover{color:var(--point);}
-  #fileList{display:none;margin-top:4px;}
+  #fileList{margin-top:0;max-height:120px;overflow:auto;}
   .frow{display:flex;align-items:center;justify-content:flex-start;gap:8px;line-height:1.9;}
   .frow .nm{flex:1;min-width:0;font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:12px;color:#7e8186;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .frow .rs{color:#b9bcc1;font-size:11px;}
@@ -99,6 +99,15 @@
   .striplab{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:#8b8e95;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;}
   .datechk{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#8b8e95;font-weight:500;letter-spacing:0;text-transform:none;cursor:pointer;}
   .datechk input{width:13px;height:13px;margin:0;accent-color:var(--point);cursor:pointer;}
+  /* '결과 미리보기' 자리로 옮긴 '선택된 파일' 토글 — 라벨 스타일(폰트·크기·색) 그대로 상속 */
+  .filestog{border:0;background:none;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:0;}
+  .filestog:hover{color:#c9ccd1;}
+  .filepanel{display:none;margin-bottom:10px;}
+  .filepanel.open{display:block;}
+  .filebar{display:flex;justify-content:flex-end;margin-bottom:2px;}
+  .filepanel .frow .nm{color:#c7cace;}
+  .filepanel .frow .rs{color:#8b8e95;}
+  .filepanel .frow .x{color:#9a9da2;}
   .preview{font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:13px;color:#f3f4f6;
     background:#26282c;border:1px solid var(--strip-line);border-radius:10px;padding:12px 14px;
     white-space:pre-line;line-height:1.7;max-height:84px;overflow:auto;margin-bottom:12px;}
@@ -132,19 +141,6 @@
 
 <main class="wrap">
   <div class="field">
-    <div class="dropbox">
-      <button id="pick" class="addfile" type="button">＋ 파일 선택 · 드래그앤드롭</button>
-      <div class="picked">
-        <div class="pickbar">
-          <button id="filesT" class="picksum" type="button">선택된 파일 0</button>
-          <button id="clr" class="clr" type="button" style="display:none">모두 지우기</button>
-        </div>
-        <div id="fileList"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="field">
     <div class="lab"><span>구분</span></div>
     <div id="g_div" class="chips"></div>
   </div>
@@ -167,7 +163,8 @@
 </main>
 
 <div class="dock"><div class="dockin">
-  <div class="striplab"><span>결과 미리보기</span><label class="datechk"><input type="checkbox" id="dateMtime"> 수정일 기준</label></div>
+  <div class="striplab"><button id="filesT" class="filestog" type="button">▸ 선택된 파일 0</button><label class="datechk"><input type="checkbox" id="dateMtime"> 수정일 기준</label></div>
+  <div id="filePanel" class="filepanel"><div class="filebar"><button id="clr" class="clr" type="button" style="display:none">모두 지우기</button></div><div id="fileList"></div></div>
   <div id="pv" class="preview"></div>
   <button id="go" class="apply"><span id="goline" class="goline">이대로 바꾸기 <span class="arr">→</span></span></button>
 </div></div>
@@ -336,8 +333,8 @@ function refresh(){
 }
 let filesOpen=false;
 function applyFilesOpen(){
-  $("fileList").style.display=(filesOpen&&files.length)?"block":"none";
-  $("filesT").textContent=(files.length?(filesOpen?"▾ ":"▸ "):"")+"선택된 파일 "+files.length;
+  $("filePanel").classList.toggle("open", filesOpen && files.length>0);
+  $("filesT").textContent=((filesOpen&&files.length)?"▾ ":"▸ ")+"선택된 파일 "+files.length;
 }
 function renderFiles(){
   const box=$("fileList");
@@ -418,7 +415,6 @@ async function pickFiles(){
   try{const handles=await window.showOpenFilePicker({multiple:true});for(const h of handles){await addHandle(h);}}
   catch(e){if(e&&e.name!=="AbortError")toast("파일 선택 실패: "+(e.message||e));}
 }
-$("pick").onclick=pickFiles;
 
 /* 드래그앤드롭(웹): 파일 → 변경 대상 추가 / 폴더 → 권한 허용 */
 function setupDrop(){
@@ -462,14 +458,14 @@ $("go").onclick=async()=>{
   if(!$("mat").value.trim()){toast("소재명을 입력하세요");return;}
   if(!files.length){toast("먼저 파일을 선택하세요");return;}
   const p=plans();$("go").disabled=true;
-  let ok=0;const errs=[];
+  let ok=0;const errs=[],done=[];
   if(NATIVE){
     const ops=p.map(it=>({path:it.path,new_name:it.to}));
     let results=[];
     try{results=await nInvoke("rename_files",{ops:ops});}
     catch(e){alert("이름 변경 실패: "+((e&&e.message)||e));$("go").disabled=false;refresh();return;}
     for(const r of results){
-      if(r.ok){ok++;const fi=files.findIndex(f=>f.path===r.path);if(fi>=0&&r.new_path){files[fi].name=r.to;files[fi].path=r.new_path;}}
+      if(r.ok){ok++;const f=files.find(x=>x.path===r.path);if(f)done.push(f);}
       else{errs.push(r.from+": "+(r.error||"실패"));}
     }
   }else{
@@ -480,11 +476,12 @@ $("go").onclick=async()=>{
         if(cov&&await ensureRW(cov.dir)){target=await rwFileHandle(cov);}
         else if(!await ensureRW(it.handle)){errs.push(it.from+": 권한이 거부되었습니다");continue;}
         if(it.to!==it.from)await target.move(it.to);
-        const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0){files[fi].name=it.to;files[fi].handle=target;}
+        const f=files.find(x=>x.handle===it.handle);if(f)done.push(f);
         ok++;
       }catch(e){errs.push(it.from+": "+((e&&e.message)||e));}
     }
   }
+  if(done.length)files=files.filter(f=>done.indexOf(f)<0);
   renderFiles();refresh();
   if(ok>0){addMat($("mat").value);renderSug();}
   if(errs.length)alert(`성공 ${ok}개 / 실패 ${errs.length}개\n\n`+errs.slice(0,8).join("\n"));
@@ -492,7 +489,7 @@ $("go").onclick=async()=>{
   $("go").disabled=false;refresh();
 };
 
-if(!SUPPORTED){$("warn").classList.add("show");$("pick").disabled=true;}
+if(!SUPPORTED){$("warn").classList.add("show");}
 chips("g_div",DIVS,"division",{none:true,add:true,persist:saveDiv,deletable:true,fixed:["maugrowth"],onDel:delDiv});
 chips("g_svc",SERVICES,"service",{none:true,add:true,persist:saveSvc,deletable:true,fixed:["fleamarket","jobs","group","realty","car","LocalAds"],onDel:delSvc});
 renderSer();pill();renderSug();renderFiles();
@@ -514,14 +511,11 @@ if(NATIVE){
       const w=Math.max(360,Math.min(460,aw-m)),h=Math.max(520,Math.min(680,ah-m));
       W.setSize(new LS(w,h)).then(()=>{if(W.center)W.center();}).catch(()=>{});}
   }catch(e){}
-  /* 헤더 링크: 📌 상단고정 · 소재폴더(열기) · 내보내기(공유 파일) */
+  /* 헤더 링크: 소재폴더(열기) · 내보내기(공유 파일) */
   const gc=$("grantCustom");
   if(gc){
     const wrap=document.createElement("span");wrap.style.cssText="display:flex;gap:10px;align-items:center;";
     gc.parentNode.insertBefore(wrap,gc);
-    const pin=document.createElement("a");pin.className="perm";pin.textContent="📌 고정";pin.title="창을 항상 맨 위에 두기";
-    let pinned=false;pin.onclick=async()=>{pinned=!pinned;try{await T.window.getCurrentWindow().setAlwaysOnTop(pinned);}catch(e){}pin.classList.toggle("on",pinned);pin.textContent=pinned?"📌 고정됨":"📌 고정";toast(pinned?"창을 맨 위에 고정했어요":"고정을 해제했어요");};
-    wrap.appendChild(pin);
     gc.textContent="소재폴더";gc.title="소재명 저장 폴더 열기";gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};wrap.appendChild(gc);
     const exp=document.createElement("a");exp.className="perm";exp.textContent="내보내기";exp.title="소재명 목록을 공유 파일로 내보내기";
     exp.onclick=async()=>{try{const fn="소재목록_"+ymm()+".jsonl";const path=await nInvoke("export_materials",{filename:fn});toast("공유용 파일을 만들었어요: "+fn);if(path)nInvoke("reveal_in_folder",{path:path}).catch(()=>{});}catch(e){toast("내보내기 실패");}};
