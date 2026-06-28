@@ -1,0 +1,83 @@
+name: Build Windows app
+
+# 'v'로 시작하는 태그(예: v1.0.0)를 푸시하면 윈도우용 .exe를 빌드해
+# GitHub Releases에 자동으로 올립니다.
+# 수동 실행(Actions 탭 → Run workflow)도 가능하며, 이때는 빌드 결과물이
+# 워크플로 'Artifacts'로 첨부됩니다(릴리스는 만들지 않음).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare frontend (dist)
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp index.html dist/
+          cp icon.svg dist/ 2>/dev/null || true
+          cp manifest.webmanifest dist/ 2>/dev/null || true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Build (and publish installer to Releases on a tag)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: .
+          tagName: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+          releaseName: "파일명 일괄 변경기 ${{ github.ref_name }}"
+          releaseBody: |
+            드래그앤드롭으로 파일 이름을 즉시(확인창 없이) 바꾸는 윈도우 앱입니다.
+
+            - 설치형: `*-setup.exe` 를 받아 설치하세요. (시작메뉴 아이콘 생성, WebView2 자동 처리)
+            - 무설치형: `파일명변경기_포터블.exe` 한 개를 받아 더블클릭하면 바로 실행됩니다.
+
+            처음 실행 시 "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행** 을 누르세요. (서명되지 않은 앱이라 처음 1회만 나옵니다)
+          releaseDraft: false
+          prerelease: false
+
+      - name: Stage portable exe
+        shell: bash
+        run: |
+          if [ -f "src-tauri/target/release/CreativeNamer.exe" ]; then
+            cp "src-tauri/target/release/CreativeNamer.exe" "파일명변경기_포터블.exe"
+          else
+            cp "src-tauri/target/release/creativenamer.exe" "파일명변경기_포터블.exe"
+          fi
+
+      - name: Upload portable exe to the Release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: 파일명변경기_포터블.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build artifacts (every run)
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-app
+          if-no-files-found: warn
+          path: |
+            src-tauri/target/release/bundle/nsis/*-setup.exe
+            파일명변경기_포터블.exe

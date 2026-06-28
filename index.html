@@ -197,6 +197,13 @@ const PK="namepresso_prefixes";
 const sel={division:"maugrowth",service:"fleamarket",series:null};
 let abbrev=false, files=[];
 
+/* ===== 네이티브(Tauri) 브리지 =====
+   window.__TAURI__ 가 있으면 윈도우 네이티브 앱으로 동작(파일 I/O를 Rust가 처리 → 확인창 0회).
+   없으면 기존 웹(File System Access API) 경로 그대로 사용. */
+const NATIVE = !!(window.__TAURI__ && window.__TAURI__.core);
+const T = NATIVE ? window.__TAURI__ : null;
+const nInvoke = (cmd,args)=>T.core.invoke(cmd,args);
+
 const $=id=>document.getElementById(id);
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
 function ymm(){const d=new Date();return String(d.getFullYear()%100).padStart(2,"0")+String(d.getMonth()+1).padStart(2,"0");}
@@ -210,7 +217,8 @@ function loadMats(){try{const a=JSON.parse(localStorage.getItem(MK));if(Array.is
 function saveMats(){try{localStorage.setItem(MK,JSON.stringify(MATS));}catch(e){}}
 let MATS=loadMats();
 function addMat(n){n=(n||"").trim();if(!n)return;const rec={n:n};if(sel.service)rec.service=sel.service;rec.division=sel.division;if(sel.series)rec.series=sel.series;
-  const i=MATS.findIndex(m=>m.n.toLowerCase()===n.toLowerCase());if(i>=0)MATS[i]=rec;else MATS.unshift(rec);saveMats();}
+  const i=MATS.findIndex(m=>m.n.toLowerCase()===n.toLowerCase());if(i>=0)MATS[i]=rec;else MATS.unshift(rec);saveMats();
+  if(NATIVE){const nrec=Object.assign({},rec);try{nrec.ts=new Date().toISOString().slice(0,10);}catch(e){}nInvoke("add_material",{rec:nrec}).catch(()=>{});}}
 function svcTok(){return sel.service?(abbrev?(ABBR[sel.service]||sel.service):sel.service):"";}
 function camel(s){const p=s.trim().split(/[\s_]+/).filter(Boolean);if(p.length<=1)return s.trim();return p[0].charAt(0).toLowerCase()+p[0].slice(1)+p.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join("");}
 function matTok(){const m=$("mat").value.trim();if(!m)return"";return sel.series?`${sel.series}-${m}`:m;}
@@ -289,7 +297,7 @@ $("abbr").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("a
 function build(v){return ORDER.map(k=>(v[k]||"").trim()).filter(Boolean).join("_");}
 function plans(){const mat=matTok(),out=[],used={},date=ymm();
   files.forEach(f=>{const vals={type:typeFor(f.name),division:sel.division||"",service:svcTok(),material:mat,resolution:f.res||"",date};
-    const ext=extOf(f.name);let c=build(vals)+ext,d=2;while(used[c.toLowerCase()]){c=build(vals)+"_dup"+d+ext;d++;}used[c.toLowerCase()]=1;out.push({handle:f.handle,from:f.name,to:c});});
+    const ext=extOf(f.name);let c=build(vals)+ext,d=2;while(used[c.toLowerCase()]){c=build(vals)+"_dup"+d+ext;d++;}used[c.toLowerCase()]=1;out.push({handle:f.handle,path:f.path,from:f.name,to:c});});
   return out;}
 function refresh(){
   const need=!$("mat").value.trim();let t;
@@ -317,7 +325,7 @@ $("filesT").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFi
 $("clr").onclick=()=>{files=[];renderFiles();refresh();};
 
 /* ===== File System Access API ===== */
-const SUPPORTED = !!(window.showOpenFilePicker && window.showDirectoryPicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
+const SUPPORTED = NATIVE ? true : !!(window.showOpenFilePicker && window.showDirectoryPicker && window.FileSystemFileHandle && typeof FileSystemFileHandle.prototype.move === "function");
 let grantedDirs=[];
 
 async function ensureRW(handle){try{
@@ -357,21 +365,35 @@ $("grantCustom").onclick=grantCustom;
 
 async function addHandle(h){
   if(!h||h.kind!=="file")return;
-  for(const f of files){if(f.handle===h)return;if(f.handle.isSameEntry&&await f.handle.isSameEntry(h))return;}
+  for(const f of files){if(f.handle===h)return;if(f.handle&&f.handle.isSameEntry&&await f.handle.isSameEntry(h))return;}
   const rec={handle:h,name:h.name,res:""};
   files.push(rec);renderFiles();refresh();
   try{const file=await h.getFile();rec.res=await getRes(file,h.name);}catch(e){}
   renderFiles();refresh();
 }
+/* 네이티브: 절대경로로 파일 추가 (해상도는 바이트를 읽어 기존 파서 그대로 사용) */
+async function addPath(path){
+  for(const f of files){if(f.path===path)return;}
+  const name=path.split(/[\\/]/).pop();
+  const rec={path:path,name:name,res:""};
+  files.push(rec);renderFiles();refresh();
+  try{const buf=await nInvoke("read_file_bytes",{path:path});rec.res=await getRes(new Blob([buf]),name);}catch(e){}
+  renderFiles();refresh();
+}
 async function pickFiles(){
+  if(NATIVE){
+    try{const sel=await T.dialog.open({multiple:true});if(!sel)return;const arr=Array.isArray(sel)?sel:[sel];for(const p of arr){await addPath(p);}}
+    catch(e){toast("파일 선택 실패: "+((e&&e.message)||e));}
+    return;
+  }
   if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
   try{const handles=await window.showOpenFilePicker({multiple:true});for(const h of handles){await addHandle(h);}}
   catch(e){if(e&&e.name!=="AbortError")toast("파일 선택 실패: "+(e.message||e));}
 }
 $("pick").onclick=pickFiles;
 
-/* 드래그앤드롭: 파일 → 변경 대상 추가 / 폴더 → 권한 허용 */
-(function setupDrop(){
+/* 드래그앤드롭(웹): 파일 → 변경 대상 추가 / 폴더 → 권한 허용 */
+function setupDrop(){
   const stop=e=>{e.preventDefault();e.stopPropagation();};
   let depth=0;
   document.addEventListener("dragenter",e=>{stop(e);depth++;document.body.classList.add("drag");});
@@ -389,7 +411,23 @@ $("pick").onclick=pickFiles;
       else await addHandle(h);
     }
   });
-})();
+}
+/* 드래그앤드롭(네이티브): OS가 주는 실제 절대경로를 그대로 받음.
+   .jsonl/.txt 를 떨구면 소재 목록 병합, 그 외는 변경 대상으로 추가. */
+function setupNativeDrop(){
+  const onDrop=async(paths)=>{
+    document.body.classList.remove("drag");
+    for(const p of (paths||[])){
+      if(/\.(jsonl|txt)$/i.test(p)){
+        try{const arr=await nInvoke("import_file",{path:p});if(Array.isArray(arr)){MATS=arr;renderSug();}toast("소재 목록을 합쳤어요");}catch(e){}
+      }else{await addPath(p);}
+    }
+  };
+  T.event.listen("tauri://drag-enter",()=>document.body.classList.add("drag"));
+  T.event.listen("tauri://drag-over",()=>document.body.classList.add("drag"));
+  T.event.listen("tauri://drag-leave",()=>document.body.classList.remove("drag"));
+  T.event.listen("tauri://drag-drop",e=>onDrop(e&&e.payload&&e.payload.paths));
+}
 
 $("go").onclick=async()=>{
   if(!SUPPORTED){toast("이 브라우저는 지원되지 않습니다 (Chrome/Edge 권장)");return;}
@@ -397,16 +435,27 @@ $("go").onclick=async()=>{
   if(!files.length){toast("먼저 파일을 선택하세요");return;}
   const p=plans();$("go").disabled=true;
   let ok=0;const errs=[];
-  for(const it of p){
-    try{
-      let target=it.handle;
-      const cov=await dirThatCovers(it.handle);
-      if(cov&&await ensureRW(cov.dir)){target=await rwFileHandle(cov);}
-      else if(!await ensureRW(it.handle)){errs.push(it.from+": 권한이 거부되었습니다");continue;}
-      if(it.to!==it.from)await target.move(it.to);
-      const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0){files[fi].name=it.to;files[fi].handle=target;}
-      ok++;
-    }catch(e){errs.push(it.from+": "+((e&&e.message)||e));}
+  if(NATIVE){
+    const ops=p.map(it=>({path:it.path,new_name:it.to}));
+    let results=[];
+    try{results=await nInvoke("rename_files",{ops:ops});}
+    catch(e){alert("이름 변경 실패: "+((e&&e.message)||e));$("go").disabled=false;refresh();return;}
+    for(const r of results){
+      if(r.ok){ok++;const fi=files.findIndex(f=>f.path===r.path);if(fi>=0&&r.new_path){files[fi].name=r.to;files[fi].path=r.new_path;}}
+      else{errs.push(r.from+": "+(r.error||"실패"));}
+    }
+  }else{
+    for(const it of p){
+      try{
+        let target=it.handle;
+        const cov=await dirThatCovers(it.handle);
+        if(cov&&await ensureRW(cov.dir)){target=await rwFileHandle(cov);}
+        else if(!await ensureRW(it.handle)){errs.push(it.from+": 권한이 거부되었습니다");continue;}
+        if(it.to!==it.from)await target.move(it.to);
+        const fi=files.findIndex(f=>f.handle===it.handle);if(fi>=0){files[fi].name=it.to;files[fi].handle=target;}
+        ok++;
+      }catch(e){errs.push(it.from+": "+((e&&e.message)||e));}
+    }
   }
   renderFiles();refresh();
   if(ok>0){addMat($("mat").value);renderSug();}
@@ -422,10 +471,42 @@ renderSer();pill();renderSug();renderFiles();
 $("mat").addEventListener("input",refresh);
 $("mat").addEventListener("blur",()=>{$("mat").value=camel($("mat").value);refresh();});
 refresh();
-(async()=>{try{await loadGrantedDirs();}catch(e){}})();
+
+/* 드래그앤드롭 활성화 (네이티브 / 웹) */
+if(NATIVE){setupNativeDrop();}else{setupDrop();}
+
+if(NATIVE){
+  /* 헤더 링크 재활용: '폴더 권한 허용하기' → '소재 폴더' 열기 + '내보내기' 추가 */
+  const gc=$("grantCustom");
+  if(gc){
+    gc.textContent="소재 폴더";
+    gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};
+    const wrap=document.createElement("span");
+    wrap.style.cssText="display:flex;gap:12px;align-items:center;";
+    gc.parentNode.insertBefore(wrap,gc);
+    wrap.appendChild(gc);
+    const exp=document.createElement("a");
+    exp.className="perm";exp.textContent="내보내기";
+    exp.onclick=async()=>{try{const fn="소재목록_"+ymm()+".jsonl";await nInvoke("export_materials",{filename:fn});toast("내보냈어요: "+fn);nInvoke("open_data_folder").catch(()=>{});}catch(e){toast("내보내기 실패");}};
+    wrap.appendChild(exp);
+  }
+  /* 파일 기반 소재명 DB 로드 (+ 최초 1회 localStorage 이전, inbox 자동 병합은 Rust가 처리) */
+  (async()=>{
+    try{
+      let arr=await nInvoke("load_materials");
+      if((!Array.isArray(arr)||!arr.length)&&Array.isArray(MATS)&&MATS.length){
+        for(const m of MATS){const rec=Object.assign({},m);try{rec.ts=new Date().toISOString().slice(0,10);}catch(e){}await nInvoke("add_material",{rec:rec}).catch(()=>{});}
+        arr=await nInvoke("load_materials");
+      }
+      if(Array.isArray(arr)&&arr.length){MATS=arr;renderSug();}
+    }catch(e){}
+  })();
+}else{
+  (async()=>{try{await loadGrantedDirs();}catch(e){}})();
+}
 
 /* ===== PWA: 설치 + 서비스워커 ===== */
-if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
+if(!NATIVE && "serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
 let deferredPrompt=null;
 const installEl=$("install");
 const standalone=window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches;

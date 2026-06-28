@@ -1,0 +1,8 @@
+# Tauri / native build artifacts
+/dist/
+src-tauri/target/
+src-tauri/gen/
+
+# Node tooling used only to generate icons (not part of the app)
+node_modules/
+package-lock.json
