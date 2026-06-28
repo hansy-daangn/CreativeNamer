@@ -1,20 +1,30 @@
-name: Build Windows app
+name: Build apps
 
-# 'v'로 시작하는 태그(예: v1.0.0)를 푸시하면 윈도우용 .exe를 빌드해
-# GitHub Releases에 자동으로 올립니다(설치파일 + 무설치 실행파일, 딱 2개).
-# 수동 실행(Actions 탭 → Run workflow)이나 검증용 브랜치 푸시는 릴리스를 만들지 않고
-# 빌드 결과만 Artifacts(windows-app)로 첨부합니다.
+# 'v'로 시작하는 태그를 푸시하면 윈도우(.exe) + 맥(.dmg)을 빌드해 Releases에 올립니다.
+# 수동 실행(Actions → Run workflow)은 릴리스 없이 빌드 결과만 Artifacts로 첨부합니다.
 on:
   push:
     tags: ["v*"]
+    # 임시: 태그 푸시가 프록시에서 막혀 작업 브랜치 푸시로 1회 배포. 배포 후 제거.
+    branches: ["claude/filename-renamer-windows-native-ncuisc"]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: "--bundles nsis"
+            rust_targets: ""
+          - os: macos-latest
+            args: "--target universal-apple-darwin --bundles dmg"
+            rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,58 +40,85 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-pc-windows-msvc
+          targets: ${{ matrix.rust_targets }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
 
-      - name: Build (tauri build → installer + binary)
+      - name: Build (tauri)
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: .
+          args: ${{ matrix.args }}
 
-      - name: Collect outputs (flat, friendly names)
+      - name: Collect outputs (Windows)
+        if: matrix.os == 'windows-latest'
         shell: bash
         run: |
           mkdir -p out
-          # 무설치 실행파일 (자산 이름은 ASCII로 — 한글 자산명은 업로드 라벨 단계에서 실패함)
-          if [ -f "src-tauri/target/release/CreativeNamer.exe" ]; then
-            cp "src-tauri/target/release/CreativeNamer.exe" "out/CreativeNamer-Run.exe"
+          if [ -f src-tauri/target/release/CreativeNamer.exe ]; then
+            cp src-tauri/target/release/CreativeNamer.exe "out/CreativeNamer-Run.exe"
           else
-            cp "src-tauri/target/release/creativenamer.exe" "out/CreativeNamer-Run.exe"
+            cp src-tauri/target/release/creativenamer.exe "out/CreativeNamer-Run.exe"
           fi
-          # 설치파일 (NSIS)
           cp src-tauri/target/release/bundle/nsis/*-setup.exe "out/CreativeNamer-Setup.exe"
           ls -la out
 
-      - name: Publish Release (on v* tag)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Collect outputs (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          mkdir -p out
+          cp src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg "out/CreativeNamer.dmg"
+          ls -la out
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.os }}
+          if-no-files-found: error
+          path: out/*
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/claude/filename-renamer-windows-native-ncuisc'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete prior bootstrap release for a clean publish (branch only)
+        if: github.ref == 'refs/heads/claude/filename-renamer-windows-native-ncuisc'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete v1.1.0 --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-assets
+          merge-multiple: true
+
+      - name: List collected assets
+        run: ls -laR dist-assets
+
+      - name: Publish Release
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}
           target_commitish: ${{ github.sha }}
           make_latest: "true"
-          name: "파일명 일괄 변경기 ${{ github.ref_name }}"
+          name: "파일명 일괄 변경기 ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}"
           body: |
-            드래그앤드롭으로 파일 이름을 즉시(확인창 없이) 바꾸는 윈도우 앱입니다.
+            파일을 끌어다 놓으면 규칙에 맞는 이름으로 한 번에 바꿔주는 프로그램입니다.
 
-            - **CreativeNamer-Run.exe** — 무설치(실행). 받아서 더블클릭하면 바로 실행됩니다. (가장 간단)
-            - **CreativeNamer-Setup.exe** — 설치형. 시작메뉴 아이콘 생성 + WebView2 자동 처리.
+            - **CreativeNamer-Run.exe** — 윈도우 무설치(실행). 받아서 더블클릭. (가장 간단)
+            - **CreativeNamer-Setup.exe** — 윈도우 설치형. 시작메뉴 아이콘 + WebView2 자동 처리.
+            - **CreativeNamer.dmg** — 맥용(Intel/Apple Silicon 공용).
 
-            처음 실행 시 "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행** 을 누르세요. (서명되지 않은 앱이라 처음 1회만)
-          files: |
-            out/CreativeNamer-Run.exe
-            out/CreativeNamer-Setup.exe
-
-      - name: Upload build artifacts (every run)
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-app
-          if-no-files-found: warn
-          path: out/*.exe
+            처음 실행 시: (윈도우) "Windows의 PC 보호" → **추가 정보 → 실행** · (맥) 앱을 **우클릭 → 열기 → 열기**.
+            서명되지 않은 앱이라 처음 1회만 나오는 정상 절차입니다.
+          files: dist-assets/*
