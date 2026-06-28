@@ -117,6 +117,12 @@
   .installLink:hover{color:var(--point);text-decoration:underline;text-underline-offset:3px;}
 
   @media (max-width:380px){.body{padding:22px 18px 18px;}.strip{padding:16px 18px 18px;}}
+
+  /* 네이티브 앱: 카드가 창 전체를 채움 (바깥 여백 낭비 / 이중 스크롤바 / 이중 리사이즈 제거) */
+  body.native{overflow:hidden;}
+  body.native .page{padding:0;height:100vh;}
+  body.native .card{width:100%;height:100vh;max-width:none;min-width:0;min-height:0;max-height:none;
+    border:0;border-radius:0;box-shadow:none;resize:none;}
 </style>
 </head>
 <body>
@@ -476,6 +482,18 @@ refresh();
 if(NATIVE){setupNativeDrop();}else{setupDrop();}
 
 if(NATIVE){
+  document.body.classList.add("native");
+  /* 화면 해상도를 감안한 창 크기 보정: 기본 460x680, 작은 화면이면 작업영역에 맞춰 축소 후 가운데 정렬.
+     (Tauri는 논리 픽셀 기준이라 고해상도에서도 흐릿해지지 않음) */
+  try{
+    const W=T.window&&T.window.getCurrentWindow&&T.window.getCurrentWindow();
+    const LS=T.window&&T.window.LogicalSize;
+    if(W&&LS){
+      const m=60,aw=(self.screen&&screen.availWidth)||1280,ah=(self.screen&&screen.availHeight)||720;
+      const w=Math.max(360,Math.min(460,aw-m)),h=Math.max(520,Math.min(680,ah-m));
+      W.setSize(new LS(w,h)).then(()=>{if(W.center)W.center();}).catch(()=>{});
+    }
+  }catch(e){}
   /* 헤더 링크 재활용: '폴더 권한 허용하기' → '소재 폴더' 열기 + '내보내기' 추가 */
   const gc=$("grantCustom");
   if(gc){
