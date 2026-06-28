@@ -1,62 +1,56 @@
 # 파일명 일괄 변경기 (Creative Namer)
 
-파일을 **끌어다 놓으면**, 규칙에 맞는 이름으로 **한 번에** 바꿔주는 도구예요.
-아래 **3가지 중 편한 방법 하나**로 시작하세요. (셋 다 화면·기능은 똑같습니다)
+규칙(`타입_구분_서비스_소재명_해상도_YYMM`)에 맞춰 로컬 파일 이름을 일괄 변경하는 도구. 브라우저에서 바로 사용하거나 윈도우·맥 데스크톱 앱으로 설치할 수 있다. 파일은 업로드되지 않으며 모든 처리는 로컬에서 이뤄진다.
 
-| 방법 | 이런 분께 | 시작하기 |
-|---|---|---|
-| 🌐 **사이트로 바로 쓰기** | 설치 없이 지금 당장 써보고 싶을 때 (Chrome·Edge) | **[👉 사이트 열기](https://hansy-daangn.github.io/CreativeNamer/)** |
-| 🪟 **윈도우 프로그램** | 확인창 없이 가장 편하게 (추천) | **[👉 윈도우용 받기](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe)** |
-| 🍎 **맥 프로그램** | 맥에서 쓸 때 | **[👉 맥용 받기](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg)** |
+## 다운로드
 
-> 다운로드 링크는 언제나 **최신 버전**으로 연결됩니다. 윈도우에서 시작메뉴 아이콘이 필요하면 [설치형(Setup)](https://github.com/hansy-daangn/CreativeNamer/releases/latest)을 받으세요.
+- **웹**: https://hansy-daangn.github.io/CreativeNamer/
+- **Windows**: [무설치 실행(CreativeNamer-Run.exe)](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe) · [설치형(CreativeNamer-Setup.exe)](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe)
+- **macOS**: [CreativeNamer.dmg](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg) (Intel·Apple Silicon 공용)
 
-## 이렇게 쓰면 끝 (4단계)
+서명되지 않은 빌드라 최초 실행 시 OS 보호 경고가 표시된다. Windows는 SmartScreen에서 `추가 정보 → 실행`, macOS는 앱을 우클릭 후 `열기`로 한 번 통과시키면 이후에는 표시되지 않는다.
 
-1. 위에서 고른 방법으로 **엽니다.**
-2. 바꿀 파일들을 창에 **끌어다 놓습니다.** (몇 개든 한꺼번에)
-3. **구분 · 서비스 · 소재명**을 고릅니다. → 아래 미리보기에 새 이름이 바로 보여요.
-4. **이대로 바꾸기**를 누르면 끝! (프로그램으로 쓰면 확인창 없이 즉시 바뀝니다)
+## 사용법
 
-만들어지는 이름 규칙: `타입_구분_서비스_소재명_해상도_YYMM.확장자`
-예시: `img_maugrowth_fleamarket_spring_1080x1080_2606.png` (비어 있는 칸은 자동 생략, 소재명만 꼭 입력)
+1. 파일을 창에 드래그하거나 파일 선택으로 추가한다.
+2. 구분 · 서비스 · 소재명을 지정한다. 하단 미리보기에 결과 이름이 표시된다.
+3. `이대로 바꾸기`로 일괄 적용한다. 데스크톱 앱은 권한·저장 확인 없이 제자리에서 즉시 변경한다.
 
-## 처음 열 때 (한 번만)
+생성 규칙: `타입_구분_서비스_소재명_해상도_YYMM.확장자` — 빈 항목은 생략되며 소재명은 필수다.
 
-서명되지 않은 무료 프로그램이라, **처음 1회만** 아래 안내 창이 떠요. 정상입니다.
+## 특징
 
-- **윈도우**: 파란 "Windows의 PC 보호" 창 → 작은 글씨 **추가 정보** → **실행**.
-- **맥**: 앱을 **우클릭(또는 control+클릭) → 열기 → 열기**. (그냥 더블클릭하면 막힐 수 있어요)
-- **사이트**: 첫 파일 추가 때 브라우저가 "파일 수정 허용?"을 한 번 물어요 → 허용.
+- 파일 미업로드, 전 과정 로컬 처리.
+- 데스크톱 앱은 확인창 없이 제자리 이름 변경(같은 디렉터리 한정, 이름 충돌 시 건너뜀).
+- 이미지·영상 해상도를 헤더 파싱으로 자동 입력(mp4·mov·webp·heic 등).
+- 소재명 프리셋 공유: 웹은 Supabase 동기화, 데스크톱은 파일 기반 보관/공유.
 
-## 왜 좋은가요?
+## 동작 방식
 
-- 파일은 **인터넷으로 보내지지 않아요.** 모든 처리는 내 컴퓨터 안에서만 일어납니다.
-- **프로그램(윈도우·맥)** 으로 쓰면 권한·저장 확인창이 전혀 없이 곧바로 이름이 바뀝니다.
-- 화면을 그리는 건 **운영체제에 내장된 웹엔진**([Tauri](https://tauri.app) v2), 파일 작업만 작은 네이티브 엔진(Rust)이 처리해서 **파일 크기가 작고**(수 MB) 빠릅니다.
+웹과 데스크톱이 동일한 `index.html`을 공유하며 `window.__TAURI__` 유무로 분기한다.
 
-## 소재명 저장 · 공유 (서버 없이 파일로)
+- **웹**: File System Access API로 로컬 파일을 변경하고 소재명 목록을 Supabase에 동기화한다. Chromium 계열(Chrome·Edge)에서 동작한다.
+- **데스크톱**: [Tauri](https://tauri.app) v2로 감싸 OS 내장 WebView로 렌더링하고, 파일 입출력은 Rust(`src-tauri/`)가 처리한다. 소재명은 `%APPDATA%\파일명변경기\`에 파일로 보관한다.
+  - `materials.jsonl` — 소재명 목록(이름 변경 시 자동 누적)
+  - `inbox/` — 공유받은 목록 파일을 두면 다음 실행 시 병합(처리분은 `inbox/_merged/`로 이동)
+  - `exports/` — `내보내기`로 생성한 공유 파일
 
-소재명은 서버 대신 **내 컴퓨터의 텍스트 파일**(`materials.jsonl`)에 차곡차곡 쌓여요. 다른 사람과는 **파일을 주고받아** 공유합니다.
+## 빌드 / 배포
 
-- 저장 폴더(프로그램 헤더의 **소재폴더** 버튼으로 열림): 윈도우 `%APPDATA%\파일명변경기\`
-  - `materials.jsonl` — 내 소재명 주소록 (자동 저장)
-  - `사용법.txt` — 폴더 안내문
-  - `inbox\` — 받은 파일을 넣는 우체통 (다음 실행 때 자동 합쳐짐, 처리된 파일은 `inbox\_merged\`로 이동)
-  - `exports\` — **내보내기** 버튼으로 만든 공유본이 생기는 곳
-- 보내기: **내보내기** → 생긴 파일을 카톡/메일로 전송 · 받기: 받은 파일을 `inbox`에 넣고 다시 켜기(또는 창에 바로 끌어다 놓기).
+- **릴리스**: `v*` 태그를 푸시하면 GitHub Actions가 Windows(`.exe`)·macOS(`.dmg`)를 빌드해 Releases에 게시한다(`workflow_dispatch` 수동 실행은 Artifacts만 산출).
+- **웹**: 기본 브랜치 푸시 시 `deploy-pages.yml`로 GitHub Pages에 배포.
+- 산출물 `dist/`·`src-tauri/target/`은 `.gitignore` 대상이다.
 
-## 개발자용 / 빌드
+로컬 빌드(Rust + 플랫폼 WebView 필요):
 
-- 웹(사이트)·윈도우·맥이 **같은 `index.html`** 을 씁니다. `window.__TAURI__` 유무로 분기해, 사이트에선 File System Access API를, 프로그램에선 네이티브 파일 I/O(`src-tauri/` Rust)를 사용합니다.
-- 실제 설치파일은 **GitHub Actions**가 만듭니다. `v`로 시작하는 태그를 푸시하면 윈도우(.exe) + 맥(.dmg)을 빌드해 Releases에 자동 게시합니다. (Actions → Run workflow 로 수동 실행 시엔 빌드 결과만 Artifacts로 첨부)
-- 사이트는 `.github/workflows/deploy-pages.yml`로 기본 브랜치 푸시 시 자동 배포됩니다.
-- `dist/`, `src-tauri/target/` 는 빌드 산출물이라 `.gitignore` 처리됩니다.
+```bash
+mkdir -p dist && cp index.html icon.svg manifest.webmanifest dist/
+cd src-tauri && cargo tauri build
+```
 
-## 한계 / 참고
+## 제한
 
-- **되돌리기(undo) 없음**: 같은 폴더 내에서만 변경하고, 같은 이름이 이미 있으면 건너뜁니다. 바꾸기 전에 미리보기로 항상 확인됩니다.
-- 서명 전이라 첫 실행 1회 안내 창(위 "처음 열 때"). 유료 코드서명을 붙이면 사라집니다.
-- 매우 큰 영상은 해상도를 못 읽을 수 있어요(이름 변경 자체는 정상).
-- 소재 목록 공유는 실시간이 아니라 **파일을 주고받는 수동 동기화**입니다.
-- 사이트(브라우저) 버전은 Chrome·Edge에서만 동작하고, 파일 변경 시 권한 허용이 한 번 필요합니다. 이게 번거로우면 프로그램(윈도우·맥)을 쓰세요.
+- 되돌리기 미지원. 같은 디렉터리 내에서만 변경하며 이름 충돌 시 건너뛴다.
+- 미서명 빌드의 최초 실행 경고(위 참고). 코드 서명 적용 시 제거된다.
+- 일부 대용량 영상은 해상도 추출이 누락될 수 있다.
+- 데스크톱의 소재명 공유는 파일 기반 수동 동기화다.
