@@ -7,6 +7,8 @@ name: Build Windows app
 on:
   push:
     tags: ["v*"]
+    # 임시: v1.0.0 최초 배포용(태그 푸시가 프록시에서 막혀 브랜치 푸시로 1회 배포). 배포 후 제거.
+    branches: ["claude/filename-renamer-windows-native-ncuisc"]
   workflow_dispatch:
 
 permissions:
@@ -58,14 +60,14 @@ jobs:
           cp src-tauri/target/release/bundle/nsis/*-setup.exe "out/파일명변경기_설치.exe"
           ls -la out
 
-      - name: Publish Release (tag builds only)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Publish Release (tag, or one-time branch bootstrap)
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/claude/filename-renamer-windows-native-ncuisc'
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "파일명 일괄 변경기 ${{ github.ref_name }}"
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          name: "파일명 일괄 변경기 ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}"
           body: |
             드래그앤드롭으로 파일 이름을 즉시(확인창 없이) 바꾸는 윈도우 앱입니다.
 
