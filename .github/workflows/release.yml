@@ -60,6 +60,13 @@ jobs:
           cp src-tauri/target/release/bundle/nsis/*-setup.exe "out/CreativeNamer-Setup.exe"
           ls -la out
 
+      - name: Delete botched bootstrap release for a clean publish (branch bootstrap only)
+        if: github.ref == 'refs/heads/claude/filename-renamer-windows-native-ncuisc'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete v1.0.0 --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+
       - name: Publish Release (tag, or one-time branch bootstrap)
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/claude/filename-renamer-windows-native-ncuisc'
         uses: softprops/action-gh-release@v2
