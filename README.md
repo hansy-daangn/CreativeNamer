@@ -1,29 +1,27 @@
 # 파일명 일괄 변경기 (Creative Namer)
+파일을 창에 드래그하면 이름을 바꿔줘요: 네이밍 컨벤션(`타입_구분_서비스_소재명_해상도_YYMM`)
 
-규칙(`타입_구분_서비스_소재명_해상도_YYMM`)에 맞춰 로컬 파일 이름을 일괄 변경하는 도구. 브라우저에서 바로 사용하거나 윈도우·맥 데스크톱 앱으로 설치할 수 있다. 파일은 업로드되지 않으며 모든 처리는 로컬에서 이뤄진다.
+- [**브라우저**](https://hansy-daangn.github.io/CreativeNamer/), [**윈도우**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe), [**맥OS**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg)를 지원하며, 로컬로만 구동되어 보안성과 작업 속도를 극대화해요.
+- 브라우저는 링크만 알면 사용할 수 있지만, 보안정책상 파일명을 바꿀때마다 확인을 눌러줘야 해요.
+- 윈도우는 [**무설치 실행파일**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe)로도 사용할 수 있어요.
 
-## 다운로드
 
-- **웹**: https://hansy-daangn.github.io/CreativeNamer/
-- **Windows**: [무설치 실행(CreativeNamer-Run.exe)](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe) · [설치형(CreativeNamer-Setup.exe)](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe)
-- **macOS**: [CreativeNamer.dmg](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg) (Intel·Apple Silicon 공용)
+## 사용하기
 
-서명되지 않은 빌드라 최초 실행 시 OS 보호 경고가 표시된다. Windows는 SmartScreen에서 `추가 정보 → 실행`, macOS는 앱을 우클릭 후 `열기`로 한 번 통과시키면 이후에는 표시되지 않는다.
-
-## 사용법
-
-1. 파일을 창에 드래그하거나 파일 선택으로 추가한다.
-2. 구분 · 서비스 · 소재명을 지정한다. 하단 미리보기에 결과 이름이 표시된다.
-3. `이대로 바꾸기`로 일괄 적용한다. 데스크톱 앱은 권한·저장 확인 없이 제자리에서 즉시 변경한다.
+1. 파일을 창에 드래그해요.
+2. 구분 · 서비스 · 소재명을 지정해요. 시리즈 소재의 경우, 접두어를 추가할 수 있어요.
+3. `바꾸기`버튼을 클릭하면, 일괄 적용돼요.
 
 생성 규칙: `타입_구분_서비스_소재명_해상도_YYMM.확장자` — 빈 항목은 생략되며 소재명은 필수다.
 
+
 ## 특징
 
-- 파일 미업로드, 전 과정 로컬 처리.
-- 데스크톱 앱은 확인창 없이 제자리 이름 변경(같은 디렉터리 한정, 이름 충돌 시 건너뜀).
+- 소재명은 자동으로 저장돼요: 웹은 Supabase서버 동기화, 데스크톱은 파일 기반 저장/공유.
 - 이미지·영상 해상도를 헤더 파싱으로 자동 입력(mp4·mov·webp·heic 등).
-- 소재명 프리셋 공유: 웹은 Supabase 동기화, 데스크톱은 파일 기반 보관/공유.
+
+
+<details><summary>상세 정보</summary>
 
 ## 동작 방식
 
@@ -34,6 +32,7 @@
   - `materials.jsonl` — 소재명 목록(이름 변경 시 자동 누적)
   - `inbox/` — 공유받은 목록 파일을 두면 다음 실행 시 병합(처리분은 `inbox/_merged/`로 이동)
   - `exports/` — `내보내기`로 생성한 공유 파일
+
 
 ## 빌드 / 배포
 
@@ -47,10 +46,6 @@
 mkdir -p dist && cp index.html icon.svg manifest.webmanifest dist/
 cd src-tauri && cargo tauri build
 ```
-
-## 제한
-
-- 되돌리기 미지원. 같은 디렉터리 내에서만 변경하며 이름 충돌 시 건너뛴다.
-- 미서명 빌드의 최초 실행 경고(위 참고). 코드 서명 적용 시 제거된다.
 - 일부 대용량 영상은 해상도 추출이 누락될 수 있다.
 - 데스크톱의 소재명 공유는 파일 기반 수동 동기화다.
+</details>
