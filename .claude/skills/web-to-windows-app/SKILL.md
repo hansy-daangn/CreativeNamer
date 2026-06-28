@@ -168,3 +168,14 @@ const nInvoke = (cmd,args)=>T.core.invoke(cmd,args);
 - 테스트용: Actions 실행의 `windows-app` Artifacts(zip 풀면 exe 2개).
 - 정식: `git tag vX.Y.Z && git push origin vX.Y.Z` → Releases에 `파일명변경기_실행.exe` + `파일명변경기_설치.exe`.
 - 컴맹용 한 줄: "실행.exe 받아서 더블클릭 → 첫 실행 시 추가 정보 → 실행."
+
+## 12. 이 앱에 적용된 추가 UX (유지할 것)
+
+- **README 최상단 퀵스타트**: 1줄 요약 + 직접 다운로드 링크(`releases/latest/download/<한글파일명 percent-encoded>.exe`) + 드래그드롭 사용법, 첫 2~3줄로 받고 쓸 수 있게.
+- **창 꽉 채움**: `body.native`에서 `.card`가 창 전체를 채움(여백/이중 스크롤/이중 리사이즈 제거). 기본 460x680 + 해상도 보정 + center.
+- **상단 고정 토글**: 헤더에 📌 링크 → `T.window.getCurrentWindow().setAlwaysOnTop(bool)` 토글(`.perm.on` 강조).
+- **제목 = 파일 토글**: `+파일선택` 드롭박스 영역 제거(네이티브). 제목 버튼이 `[ ▸ 파일명 일괄 변경기 (N) ]`로 파일 개수 표시 + 클릭 시 목록 패널 토글. 파일 0개면 점선 드래그 안내(`#fileHint`) 표시. 파일명은 가로 스크롤 없이 전체 너비 + ellipsis.
+- **소재폴더 vs 내보내기 구분**: `소재폴더`=폴더 열기(`open_data_folder`), `내보내기`=공유파일 생성 후 그 파일을 선택해 보여줌(`reveal_in_folder` = `explorer /select,<path>`). 같은 동작 중복 금지.
+- **폴더 안내문**: `ensure_dirs`가 데이터 폴더에 `사용법.txt`(한글 설명)를 1회 생성.
+- **기존 소재명 보기 자동 스크롤**: `#sugT`로 열 때 `scrollIntoView({block:'end'})`로 목록까지 자동 스크롤.
+- 새 Rust 커맨드는 `generate_handler!`에 반드시 등록(`reveal_in_folder` 포함).

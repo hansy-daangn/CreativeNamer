@@ -56,8 +56,31 @@ fn ensure_dirs() -> PathBuf {
     let d = data_dir();
     let _ = fs::create_dir_all(d.join("inbox").join("_merged"));
     let _ = fs::create_dir_all(d.join("exports"));
+    // 컴맹용 폴더 안내문 (없을 때만 생성)
+    let guide = d.join("사용법.txt");
+    if !guide.exists() {
+        let _ = fs::write(&guide, GUIDE_TEXT);
+    }
     d
 }
+
+const GUIDE_TEXT: &str = "\
+[파일명 일괄 변경기 — 소재 폴더 안내]
+
+이 폴더는 '소재명'(파일 이름에 들어가는 이름) 목록을 보관하는 곳입니다.
+프로그램이 알아서 관리하니, 평소에는 신경 쓰지 않아도 됩니다.
+
+- materials.jsonl : 내가 사용한 소재명이 한 줄에 하나씩 쌓이는 '주소록' 파일입니다.
+- inbox\\         : 다른 사람이 보내준 소재명 파일(.jsonl 또는 .txt)을 여기에 넣어두면,
+                    프로그램을 다시 켤 때 자동으로 내 목록에 합쳐집니다. (받은 파일 넣는 우체통)
+- inbox\\_merged\\ : 합치기가 끝난 파일이 자동으로 이쪽으로 옮겨집니다. (중복 합침 방지용 — 그냥 두세요)
+- exports\\        : 프로그램의 '내보내기' 버튼을 누르면, 남에게 보낼 공유용 복사본이 여기에 생깁니다.
+
+[공유하는 법]
+1) 보내기 : 프로그램에서 '내보내기' → exports 폴더에 생긴 파일을 카카오톡/메일로 전송하세요.
+2) 받기   : 받은 파일을 inbox 폴더에 넣고 프로그램을 다시 켜세요.
+            (또는 그 파일을 프로그램 창에 바로 끌어다 놓아도 합쳐집니다.)
+";
 
 /// Parse a materials file. Accepts JSON-object lines ({"n":"...",...}) and also
 /// plain "one name per line" text, so a simple shared .txt works too.
@@ -279,6 +302,38 @@ fn export_materials(filename: String) -> Result<String, String> {
     Ok(dest.to_string_lossy().to_string())
 }
 
+/// Open the data folder in the OS file explorer, with `path` selected/highlighted.
+/// Used by "내보내기" so the user immediately sees the file they need to share.
+#[tauri::command]
+fn reveal_in_folder(path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(format!("/select,{}", path))
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .args(["-R", &path])
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
+    {
+        let parent = std::path::Path::new(&path)
+            .parent()
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| PathBuf::from("."));
+        std::process::Command::new("xdg-open")
+            .arg(parent)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Open the data folder in the OS file explorer.
 #[tauri::command]
 fn open_data_folder() -> Result<(), String> {
@@ -317,6 +372,7 @@ fn main() {
             add_material,
             import_file,
             export_materials,
+            reveal_in_folder,
             open_data_folder
         ])
         .run(tauri::generate_context!())

@@ -1,11 +1,20 @@
 # 파일명 일괄 변경기 (Creative Namer)
 
-설치 없이 **웹 주소 접속만으로** 내 컴퓨터의 파일 이름을 규칙에 맞게 일괄 변경하는 정적 웹앱입니다.
-파일은 어디에도 업로드되지 않으며, 모든 처리는 브라우저 안에서 로컬로만 일어납니다.
+**파일을 끌어다 놓으면 규칙에 맞게 이름을 한 번에 바꿔주는 윈도우 프로그램입니다.** (설치 없이 바로 실행 · 확인창 없음)
 
-원본 도구(`renamer.bat` + `renamer.ps1`, PowerShell 로컬 서버 방식)를 **브라우저 단독으로 동작하는 순수 웹앱**으로 재구성한 버전입니다.
+### ⬇️ [여기를 눌러 프로그램 받기 — 파일명변경기_실행.exe](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/%ED%8C%8C%EC%9D%BC%EB%AA%85%EB%B3%80%EA%B2%BD%EA%B8%B0_%EC%8B%A4%ED%96%89.exe)
 
-**접속 주소:** https://hansy-daangn.github.io/CreativeNamer/
+받은 파일을 **더블클릭 → 프로그램 창에 파일을 끌어다 놓기 → `이대로 바꾸기`** 누르면 끝.
+(처음 1회만 "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행**)
+
+> 시작메뉴 아이콘·자동 WebView2 설치가 필요하면 [설치형(setup.exe)](https://github.com/hansy-daangn/CreativeNamer/releases/latest)을 받으세요. 브라우저로 바로 쓰려면 👉 https://hansy-daangn.github.io/CreativeNamer/
+
+---
+
+> 아래는 상세 설명입니다. 위 3줄만 읽어도 받고 쓰는 데 충분합니다.
+
+설치 없이 **웹 주소 접속만으로**도 쓸 수 있는 정적 웹앱이며, 같은 화면을 **윈도우 네이티브 앱**으로도 제공합니다.
+파일은 어디에도 업로드되지 않으며, 모든 처리는 내 컴퓨터 안에서만 일어납니다.
 
 ## 사용법
 

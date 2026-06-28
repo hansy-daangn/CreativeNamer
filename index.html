@@ -52,9 +52,9 @@
   .picksum:hover{color:var(--sub);}
   .clr{border:0;background:none;color:#b9bcc1;font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px;}
   .clr:hover{color:var(--point);}
-  #fileList{display:none;margin-top:4px;}
-  .frow{display:flex;align-items:center;justify-content:center;gap:8px;line-height:1.8;}
-  .frow .nm{font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:11.5px;color:#9a9da2;max-width:230px;overflow-x:auto;white-space:nowrap;}
+  #fileList{margin-top:2px;}
+  .frow{display:flex;align-items:center;justify-content:flex-start;gap:8px;line-height:1.95;}
+  .frow .nm{flex:1;min-width:0;font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:12px;color:#7e8186;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .frow .rs{color:#b9bcc1;font-size:11px;}
   .frow .x{border:0;background:none;color:#c4c6ca;font-size:11px;cursor:pointer;padding:0 2px;line-height:1;}
   .frow .x:hover{color:var(--point);}
@@ -123,6 +123,20 @@
   body.native .page{padding:0;height:100vh;}
   body.native .card{width:100%;height:100vh;max-width:none;min-width:0;min-height:0;max-height:none;
     border:0;border-radius:0;box-shadow:none;resize:none;}
+
+  /* 제목 자체가 '선택된 파일' 토글 버튼: [ ▸ 파일명 일괄 변경기 (29) ] */
+  .titlebtn{border:0;background:none;font-family:inherit;cursor:pointer;color:var(--ink);padding:0;text-align:left;}
+  .titlebtn:hover{color:var(--point);}
+  .head .perm.on{color:var(--point);border-color:var(--point);}
+  /* 파일 목록 패널 (열렸을 때만 표시) */
+  .filepanel{display:none;margin-bottom:18px;}
+  .filepanel.open{display:block;}
+  .filebar{display:flex;justify-content:flex-end;margin-bottom:4px;}
+  /* 드래그 안내(네이티브, 파일 0개일 때) */
+  .filehint{display:none;margin-bottom:18px;text-align:center;font-size:13px;color:var(--sub);
+    border:1.5px dashed var(--point);border-radius:14px;background:rgba(58,111,240,.04);padding:20px 16px;}
+  /* 네이티브: 웹용 파일선택 박스는 숨김(드래그드롭만 사용) */
+  body.native #dropField{display:none;}
 </style>
 </head>
 <body>
@@ -132,21 +146,21 @@
 <main class="card">
   <div class="body">
     <div class="head">
-      <h1 class="title">파일명 일괄 변경기</h1>
+      <button id="fileToggle" class="title titlebtn" type="button">파일명 일괄 변경기</button>
       <a id="grantCustom" class="perm">폴더 권한 허용하기</a>
     </div>
 
-    <div class="field">
+    <div id="dropField" class="field">
       <div class="dropbox">
         <button id="pick" class="addfile" type="button">＋ 파일 선택 · 드래그앤드롭</button>
-        <div class="picked">
-          <div class="pickbar">
-            <button id="filesT" class="picksum" type="button">선택된 파일 0</button>
-            <button id="clr" class="clr" type="button" style="display:none">모두 지우기</button>
-          </div>
-          <div id="fileList"></div>
-        </div>
       </div>
+    </div>
+
+    <div id="fileHint" class="filehint">파일을 이 창에 끌어다 놓으세요</div>
+
+    <div id="filePanel" class="filepanel">
+      <div class="filebar"><button id="clr" class="clr" type="button">모두 지우기</button></div>
+      <div id="fileList"></div>
     </div>
 
     <div class="field">
@@ -296,7 +310,8 @@ function renderSug(){const box=$("g_sug");box.innerHTML="";MATS.forEach((it,i)=>
   box.appendChild(b);});}
 $("serT").onclick=()=>{const o=$("serBox").classList.toggle("open");$("serT").classList.toggle("on",o);};
 $("serT").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("serT").onclick();}};
-$("sugT").onclick=()=>{const o=$("sugBox").classList.toggle("open");$("sugT").textContent=o?"▾ 기존 소재명 숨기기":"▸ 기존 소재명 보기";};
+$("sugT").onclick=()=>{const o=$("sugBox").classList.toggle("open");$("sugT").textContent=o?"▾ 기존 소재명 숨기기":"▸ 기존 소재명 보기";
+  if(o){requestAnimationFrame(()=>{try{$("sugBox").scrollIntoView({behavior:"smooth",block:"end"});}catch(e){try{$("sugBox").scrollIntoView();}catch(_){}}});}};
 $("abbr").onclick=()=>{abbrev=!abbrev;$("abbr").classList.toggle("on",abbrev);refresh();};
 $("abbr").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("abbr").onclick();}};
 
@@ -315,8 +330,10 @@ function refresh(){
 }
 let filesOpen=false;
 function applyFilesOpen(){
-  $("fileList").style.display=(filesOpen&&files.length)?"block":"none";
-  $("filesT").textContent=(files.length?(filesOpen?"▾ ":"▸ "):"")+"선택된 파일 "+files.length;
+  const n=files.length;
+  $("filePanel").classList.toggle("open", filesOpen && n>0);
+  $("fileToggle").textContent=(n?((filesOpen?"▾ ":"▸ ")):"")+"파일명 일괄 변경기"+(n?" ("+n+")":"");
+  const hint=$("fileHint");if(hint)hint.style.display=(NATIVE&&n===0)?"block":"none";
 }
 function renderFiles(){
   const box=$("fileList");
@@ -327,7 +344,7 @@ function renderFiles(){
   } else { box.innerHTML=""; $("clr").style.display="none"; filesOpen=false; }
   applyFilesOpen();
 }
-$("filesT").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
+$("fileToggle").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
 $("clr").onclick=()=>{files=[];renderFiles();refresh();};
 
 /* ===== File System Access API ===== */
@@ -494,18 +511,30 @@ if(NATIVE){
       W.setSize(new LS(w,h)).then(()=>{if(W.center)W.center();}).catch(()=>{});
     }
   }catch(e){}
-  /* 헤더 링크 재활용: '폴더 권한 허용하기' → '소재 폴더' 열기 + '내보내기' 추가 */
+  /* 헤더 링크: 📌 상단고정 토글 · 소재폴더(열기) · 내보내기(공유파일 생성) */
   const gc=$("grantCustom");
   if(gc){
-    gc.textContent="소재 폴더";
-    gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};
     const wrap=document.createElement("span");
-    wrap.style.cssText="display:flex;gap:12px;align-items:center;";
+    wrap.style.cssText="display:flex;gap:10px;align-items:center;";
     gc.parentNode.insertBefore(wrap,gc);
+
+    /* 상단 고정 / 해제 */
+    const pin=document.createElement("a");
+    pin.className="perm";pin.textContent="📌 고정";pin.title="이 창을 항상 맨 위에 두기";
+    let pinned=false;
+    pin.onclick=async()=>{pinned=!pinned;try{await T.window.getCurrentWindow().setAlwaysOnTop(pinned);}catch(e){}
+      pin.classList.toggle("on",pinned);pin.textContent=pinned?"📌 고정됨":"📌 고정";toast(pinned?"창을 맨 위에 고정했어요":"고정을 해제했어요");};
+    wrap.appendChild(pin);
+
+    /* 소재 폴더 열기 (받은 파일을 inbox에 넣거나 둘러볼 때) */
+    gc.textContent="소재폴더";gc.title="소재명 저장 폴더 열기";
+    gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};
     wrap.appendChild(gc);
+
+    /* 내보내기: 공유용 복사본을 만들고, 그 파일을 탐색기에서 선택해 보여줌 */
     const exp=document.createElement("a");
-    exp.className="perm";exp.textContent="내보내기";
-    exp.onclick=async()=>{try{const fn="소재목록_"+ymm()+".jsonl";await nInvoke("export_materials",{filename:fn});toast("내보냈어요: "+fn);nInvoke("open_data_folder").catch(()=>{});}catch(e){toast("내보내기 실패");}};
+    exp.className="perm";exp.textContent="내보내기";exp.title="소재명 목록을 공유용 파일로 내보내기";
+    exp.onclick=async()=>{try{const fn="소재목록_"+ymm()+".jsonl";const p=await nInvoke("export_materials",{filename:fn});toast("공유용 파일을 만들었어요: "+fn);if(p)nInvoke("reveal_in_folder",{path:p}).catch(()=>{});}catch(e){toast("내보내기 실패");}};
     wrap.appendChild(exp);
   }
   /* 파일 기반 소재명 DB 로드 (+ 최초 1회 localStorage 이전, inbox 자동 병합은 Rust가 처리) */
