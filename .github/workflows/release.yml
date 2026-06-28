@@ -5,8 +5,6 @@ name: Build apps
 on:
   push:
     tags: ["v*"]
-    # 임시: 머지된 최종 코드로 v1.1.0 재빌드/재배포(태그 푸시가 프록시에서 막힘). 재배포 후 제거.
-    branches: ["claude/filename-renamer-windows-native-ncuisc"]
   workflow_dispatch:
 
 permissions:
@@ -85,15 +83,9 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/claude/filename-renamer-windows-native-ncuisc'
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Delete prior release for a clean re-publish (branch only)
-        if: github.ref == 'refs/heads/claude/filename-renamer-windows-native-ncuisc'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release delete v1.1.0 --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
-
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -108,10 +100,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}
+          tag_name: ${{ github.ref_name }}
           target_commitish: ${{ github.sha }}
           make_latest: "true"
-          name: "파일명 일괄 변경기 ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}"
+          name: "파일명 일괄 변경기 ${{ github.ref_name }}"
           body: |
             파일을 끌어다 놓으면 규칙에 맞는 이름으로 한 번에 바꿔주는 프로그램입니다.
 
