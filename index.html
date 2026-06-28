@@ -453,6 +453,8 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.s
 let deferredPrompt=null;
 const installEl=$("install");
 const standalone=window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches;
+/* 앱(설치형)으로 처음 열 때만 권장 크기로 — 여백 최소 + 스크롤 없음. 이후엔 사용자가 조절한 크기 유지 */
+if(standalone){try{if(!localStorage.getItem("namepresso_sized")){window.resizeTo(480,700);localStorage.setItem("namepresso_sized","1");}}catch(e){}}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;if(!standalone)installEl.style.display="block";});
 installEl.onclick=async(ev)=>{ev.preventDefault();if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(_){}deferredPrompt=null;installEl.style.display="none";};
 window.addEventListener("appinstalled",()=>{installEl.style.display="none";deferredPrompt=null;});
