@@ -7,8 +7,6 @@ name: Build Windows app
 on:
   push:
     tags: ["v*"]
-    # 검증용 임시 트리거 (릴리스 없이 Artifacts만 생성)
-    branches: ["claude/filename-renamer-windows-native-ncuisc"]
   workflow_dispatch:
 
 permissions:
