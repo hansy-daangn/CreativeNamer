@@ -2,12 +2,12 @@
 
 **파일을 끌어다 놓으면 규칙에 맞게 이름을 한 번에 바꿔주는 윈도우 프로그램입니다.** (설치 없이 바로 실행 · 확인창 없음)
 
-### ⬇️ [여기를 눌러 프로그램 받기 — 파일명변경기_실행.exe](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/%ED%8C%8C%EC%9D%BC%EB%AA%85%EB%B3%80%EA%B2%BD%EA%B8%B0_%EC%8B%A4%ED%96%89.exe)
+### ⬇️ [여기를 눌러 프로그램 받기 — CreativeNamer-Run.exe (무설치)](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe)
 
 받은 파일을 **더블클릭 → 프로그램 창에 파일을 끌어다 놓기 → `이대로 바꾸기`** 누르면 끝.
 (처음 1회만 "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행**)
 
-> 시작메뉴 아이콘·자동 WebView2 설치가 필요하면 [설치형(setup.exe)](https://github.com/hansy-daangn/CreativeNamer/releases/latest)을 받으세요. 브라우저로 바로 쓰려면 👉 https://hansy-daangn.github.io/CreativeNamer/
+> 시작메뉴 아이콘·자동 WebView2 설치가 필요하면 [설치형(CreativeNamer-Setup.exe)](https://github.com/hansy-daangn/CreativeNamer/releases/latest)을 받으세요. 브라우저로 바로 쓰려면 👉 https://hansy-daangn.github.io/CreativeNamer/
 
 ---
 
@@ -58,8 +58,8 @@ Pages 소스는 **Settings → Pages → Source: GitHub Actions** 로 설정되�
 
 | 형태 | 파일 | 사용법 |
 |---|---|---|
-| **무설치형(가장 간단)** | `파일명변경기_포터블.exe` | 파일 1개를 받아 **더블클릭** 하면 끝. 설치 과정 없음. |
-| **설치형** | `파일명 일괄 변경기_..._x64-setup.exe` | 더블클릭 → 다음 → 설치 → 완료. 시작메뉴 아이콘이 생기고, WebView2가 없으면 자동 설치합니다. |
+| **무설치형(가장 간단)** | `CreativeNamer-Run.exe` | 파일 1개를 받아 **더블클릭** 하면 끝. 설치 과정 없음. |
+| **설치형** | `CreativeNamer-Setup.exe` | 더블클릭 → 다음 → 설치 → 완료. 시작메뉴 아이콘이 생기고, WebView2가 없으면 자동 설치합니다. |
 
 > 💡 최신 윈도우(10 22H2 / 11)에는 WebView2가 이미 깔려 있어 **무설치형도 대부분 바로 실행**됩니다. 혹시 실행이 안 되면 설치형을 받으세요.
 
@@ -111,7 +111,7 @@ rent
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
-# → Actions가 빌드해서 Releases에 setup.exe + 포터블 exe 를 올립니다.
+# → Actions가 빌드해서 Releases에 CreativeNamer-Setup.exe + CreativeNamer-Run.exe 를 올립니다.
 ```
 
 Actions 탭에서 **Run workflow** 로 수동 실행하면 릴리스 없이 빌드 결과만 Artifacts로 받을 수 있습니다.

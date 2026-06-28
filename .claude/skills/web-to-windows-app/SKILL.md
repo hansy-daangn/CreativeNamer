@@ -138,8 +138,9 @@ const nInvoke = (cmd,args)=>T.core.invoke(cmd,args);
 
 - 트리거: `push.tags: ["v*"]` + `workflow_dispatch`. (검증이 필요하면 임시로 `push.branches: [<작업브랜치>]` 추가 후 검증 끝나면 제거.)
 - 단계: checkout → `dist` 채우기(index.html/icon.svg/manifest 복사) → `dtolnay/rust-toolchain@stable`(target x86_64-pc-windows-msvc) → `swatinem/rust-cache`(workspaces: src-tauri) → `tauri-apps/tauri-action@v0`(projectPath ".", **tag일 때만 릴리스**; 여기선 빌드만) →
-  결과물을 `out/`에 평평하게 복사하며 친화적 이름 부여(**`파일명변경기_실행.exe`** = 무설치 binary, **`파일명변경기_설치.exe`** = nsis setup) →
-  태그면 `softprops/action-gh-release@v2`로 두 파일만 릴리스 → 매 실행 `actions/upload-artifact`(name: windows-app, path: `out/*.exe`).
+  결과물을 `out/`에 평평하게 복사하며 **ASCII** 이름 부여(**`CreativeNamer-Run.exe`** = 무설치 binary, **`CreativeNamer-Setup.exe`** = nsis setup) →
+  태그면 `softprops/action-gh-release@v2`로 두 파일만 릴리스(`target_commitish: github.sha`, `make_latest: "true"`) → 매 실행 `actions/upload-artifact`(name: windows-app, path: `out/*.exe`).
+  - ⚠️ **자산 파일명은 반드시 ASCII**: 한글 자산명은 softprops의 "restore asset label"(PATCH) 단계가 404로 실패하고, softprops는 draft에 업로드 후 마지막에 un-draft 하므로 그 실패가 릴리스를 draft로 남긴다. README 직접 다운로드 링크도 ASCII라야 깔끔: `releases/latest/download/CreativeNamer-Run.exe`.
 - binary 이름은 `CreativeNamer.exe`(mainBinaryName) 또는 `creativenamer.exe`(crate명) 둘 다 대비해 복사.
 - 산출물은 **딱 2개 평평한 exe**로 유지(폴더 깊이/긴 NSIS 이름 노출 금지).
 
@@ -166,7 +167,8 @@ const nInvoke = (cmd,args)=>T.core.invoke(cmd,args);
 ## 11. 배포 (사용자에게 안내)
 
 - 테스트용: Actions 실행의 `windows-app` Artifacts(zip 풀면 exe 2개).
-- 정식: `git tag vX.Y.Z && git push origin vX.Y.Z` → Releases에 `파일명변경기_실행.exe` + `파일명변경기_설치.exe`.
+- 정식: `git tag vX.Y.Z && git push origin vX.Y.Z` → Releases에 `CreativeNamer-Run.exe` + `CreativeNamer-Setup.exe`.
+- ⚠️ 일부 환경(에이전트 프록시)은 **태그 푸시를 403으로 막는다**. 이때는 워크플로의 release 단계를 작업 브랜치 push에서도 1회 동작하게 해 부트스트랩 배포(softprops가 tag를 생성)하고, 배포 후 그 임시 트리거를 제거한다.
 - 컴맹용 한 줄: "실행.exe 받아서 더블클릭 → 첫 실행 시 추가 정보 → 실행."
 
 ## 12. 이 앱에 적용된 추가 UX (유지할 것)
