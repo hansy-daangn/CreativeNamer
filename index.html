@@ -11,6 +11,7 @@
     --bg:#eceae6; --card:#ffffff; --ink:#1b1c1e; --sub:#8a8d92;
     --line:#e7e6e2; --line2:#edece9; --point:#3a6ff0;
     --chip:#f4f3f0; --chip-line:#e4e2dd; --strip:#1c1d20; --strip-line:#33353a; --req:#e0533d;
+    --mw:460px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,-apple-system,sans-serif;
@@ -22,17 +23,16 @@
   .warn.show{display:block;}
   .warn b{font-weight:800;}
 
-  .page{padding:26px 20px;}
-  .card{width:360px;max-width:96vw;margin:0 auto;resize:both;overflow:hidden;
-    min-width:300px;min-height:440px;max-height:calc(100vh - 52px);
-    display:flex;flex-direction:column;background:var(--card);
-    border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 34px -18px rgba(20,22,28,.28);}
-  .body{flex:1;min-height:0;overflow-y:auto;padding:26px 26px 22px;}
-
-  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;}
+  /* top bar (un-bundled from content) */
+  .hdr{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);}
+  .hdrin{max-width:var(--mw);margin:0 auto;padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
   .title{font-size:18px;font-weight:700;letter-spacing:-.02em;}
   .perm{font-size:12.5px;color:var(--sub);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;}
   .perm:hover{color:var(--point);border-color:var(--point);}
+  .perm.on{color:var(--point);border-color:var(--point);}
+
+  /* content column — fluid, resizes with the window */
+  .wrap{max-width:var(--mw);margin:0 auto;padding:24px 22px 178px;}
 
   .field{margin-bottom:18px;}
   .lab{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:9px;}
@@ -52,8 +52,8 @@
   .picksum:hover{color:var(--sub);}
   .clr{border:0;background:none;color:#b9bcc1;font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px;}
   .clr:hover{color:var(--point);}
-  #fileList{margin-top:2px;}
-  .frow{display:flex;align-items:center;justify-content:flex-start;gap:8px;line-height:1.95;}
+  #fileList{display:none;margin-top:4px;}
+  .frow{display:flex;align-items:center;justify-content:flex-start;gap:8px;line-height:1.9;}
   .frow .nm{flex:1;min-width:0;font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:12px;color:#7e8186;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .frow .rs{color:#b9bcc1;font-size:11px;}
   .frow .x{border:0;background:none;color:#c4c6ca;font-size:11px;cursor:pointer;padding:0 2px;line-height:1;}
@@ -93,14 +93,15 @@
     font-size:12px;font-weight:600;color:var(--point);cursor:pointer;display:block;padding:0;}
   .minitoggle:hover{opacity:.78;}
 
-  /* dark preview strip */
-  .strip{flex:none;background:var(--strip);padding:18px 22px 22px;}
-  .striplab{font-size:11px;color:#8b8e95;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:9px;}
+  /* dark preview bar — fixed at window bottom, separate from the form */
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--strip);}
+  .dockin{max-width:var(--mw);margin:0 auto;padding:14px 22px 16px;}
+  .striplab{font-size:11px;color:#8b8e95;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;}
   .preview{font-family:ui-monospace,"D2Coding",Consolas,Menlo,monospace;font-size:13px;color:#f3f4f6;
     background:#26282c;border:1px solid var(--strip-line);border-radius:10px;padding:12px 14px;
-    white-space:pre-line;line-height:1.7;max-height:96px;overflow:auto;margin-bottom:14px;}
+    white-space:pre-line;line-height:1.7;max-height:84px;overflow:auto;margin-bottom:12px;}
   .preview b{color:#8fb0ff;font-weight:600;}
-  .apply{width:100%;min-height:46px;border:0;border-radius:11px;background:var(--point);color:#fff;
+  .apply{width:100%;min-height:44px;border:0;border-radius:11px;background:var(--point);color:#fff;
     font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;padding:8px 14px;
     display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s;letter-spacing:-.01em;}
   .apply:hover{filter:brightness(1.07);}
@@ -109,95 +110,77 @@
   .goline.gw{color:#FFD7D7;}
   .arr{font-size:15px;line-height:1;}
 
-  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
+  .toast{position:fixed;left:50%;bottom:188px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:60;}
   .toast.show{opacity:1;}
   .dropmask{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(27,29,34,.55);color:#fff;font-size:22px;font-weight:800;z-index:80;pointer-events:none;}
   body.drag .dropmask{display:flex;}
-  .installLink{position:fixed;right:18px;bottom:18px;z-index:50;display:none;font-size:13px;color:var(--sub);text-decoration:none;cursor:pointer;font-family:inherit;}
+  .installLink{position:fixed;right:18px;bottom:180px;z-index:50;display:none;font-size:13px;color:var(--sub);text-decoration:none;cursor:pointer;font-family:inherit;}
   .installLink:hover{color:var(--point);text-decoration:underline;text-underline-offset:3px;}
 
-  @media (max-width:380px){.body{padding:22px 18px 18px;}.strip{padding:16px 18px 18px;}}
-
-  /* 네이티브 앱: 카드가 창 전체를 채움 (바깥 여백 낭비 / 이중 스크롤바 / 이중 리사이즈 제거) */
-  body.native{overflow:hidden;}
-  body.native .page{padding:0;height:100vh;}
-  body.native .card{width:100%;height:100vh;max-width:none;min-width:0;min-height:0;max-height:none;
-    border:0;border-radius:0;box-shadow:none;resize:none;}
-
-  /* 제목 자체가 '선택된 파일' 토글 버튼: [ ▸ 파일명 일괄 변경기 (29) ] */
-  .titlebtn{border:0;background:none;font-family:inherit;cursor:pointer;color:var(--ink);padding:0;text-align:left;}
-  .titlebtn:hover{color:var(--point);}
-  .head .perm.on{color:var(--point);border-color:var(--point);}
-  /* 파일 목록 패널 (열렸을 때만 표시) */
-  .filepanel{display:none;margin-bottom:18px;}
-  .filepanel.open{display:block;}
-  .filebar{display:flex;justify-content:flex-end;margin-bottom:4px;}
-  /* 드래그 안내(네이티브, 파일 0개일 때) */
-  .filehint{display:none;margin-bottom:18px;text-align:center;font-size:13px;color:var(--sub);
-    border:1.5px dashed var(--point);border-radius:14px;background:rgba(58,111,240,.04);padding:20px 16px;}
-  /* 네이티브: 웹용 파일선택 박스는 숨김(드래그드롭만 사용) */
-  body.native #dropField{display:none;}
+  @media (max-width:380px){.wrap{padding:20px 16px 178px;}}
 </style>
 </head>
 <body>
 <div id="warn" class="warn">⚠️ 이 브라우저에서는 파일 이름 변경이 동작하지 않습니다. <b>Chrome</b> 또는 <b>Microsoft Edge</b> 최신 버전으로 접속해 주세요. (File System Access API 필요)</div>
 
-<div class="page">
-<main class="card">
-  <div class="body">
-    <div class="head">
-      <button id="fileToggle" class="title titlebtn" type="button">파일명 일괄 변경기</button>
-      <a id="grantCustom" class="perm">폴더 권한 허용하기</a>
-    </div>
+<header class="hdr"><div class="hdrin">
+  <h1 class="title">파일명 일괄 변경기</h1>
+  <a id="grantCustom" class="perm">폴더 권한 허용하기</a>
+</div></header>
 
-    <div id="dropField" class="field">
-      <div class="dropbox">
-        <button id="pick" class="addfile" type="button">＋ 파일 선택 · 드래그앤드롭</button>
+<main class="wrap">
+  <div class="field">
+    <div class="dropbox">
+      <button id="pick" class="addfile" type="button">＋ 파일 선택 · 드래그앤드롭</button>
+      <div class="picked">
+        <div class="pickbar">
+          <button id="filesT" class="picksum" type="button">선택된 파일 0</button>
+          <button id="clr" class="clr" type="button" style="display:none">모두 지우기</button>
+        </div>
+        <div id="fileList"></div>
       </div>
-    </div>
-
-    <div id="fileHint" class="filehint">파일을 이 창에 끌어다 놓으세요</div>
-
-    <div id="filePanel" class="filepanel">
-      <div class="filebar"><button id="clr" class="clr" type="button">모두 지우기</button></div>
-      <div id="fileList"></div>
-    </div>
-
-    <div class="field">
-      <div class="lab"><span>구분</span></div>
-      <div id="g_div" class="chips"></div>
-    </div>
-
-    <div class="field">
-      <div class="lab"><span>서비스</span><span id="abbr" class="togchip" role="button" tabindex="0">짧게 표기해요</span></div>
-      <div id="g_svc" class="chips"></div>
-    </div>
-
-    <div class="field">
-      <div class="lab"><span>소재명<span class="req">*</span></span><span id="serT" class="togchip" role="button" tabindex="0">시리즈 소재예요</span></div>
-      <div class="pillrow">
-        <span class="pill" id="pill"><span id="pillt"></span><span class="px" id="pillx">✕</span></span>
-        <input id="mat" class="txt" placeholder="소재명을 입력하세요" autocomplete="off">
-      </div>
-      <div id="serBox" class="panelbox"><div id="g_ser" class="chips"></div></div>
-      <button id="sugT" class="minitoggle" type="button">▸ 기존 소재명 보기</button>
-      <div id="sugBox" class="panelbox"><div id="g_sug" class="chips"></div></div>
     </div>
   </div>
 
-  <div class="strip">
-    <div class="striplab">결과 미리보기</div>
-    <div id="pv" class="preview"></div>
-    <button id="go" class="apply"><span id="goline" class="goline">이대로 바꾸기 <span class="arr">→</span></span></button>
+  <div class="field">
+    <div class="lab"><span>구분</span></div>
+    <div id="g_div" class="chips"></div>
+  </div>
+
+  <div class="field">
+    <div class="lab"><span>서비스</span><span id="abbr" class="togchip" role="button" tabindex="0">짧게 표기해요</span></div>
+    <div id="g_svc" class="chips"></div>
+  </div>
+
+  <div class="field">
+    <div class="lab"><span>소재명<span class="req">*</span></span><span id="serT" class="togchip" role="button" tabindex="0">시리즈 소재예요</span></div>
+    <div class="pillrow">
+      <span class="pill" id="pill"><span id="pillt"></span><span class="px" id="pillx">✕</span></span>
+      <input id="mat" class="txt" placeholder="소재명을 입력하세요" autocomplete="off">
+    </div>
+    <div id="serBox" class="panelbox"><div id="g_ser" class="chips"></div></div>
+    <button id="sugT" class="minitoggle" type="button">▸ 기존 소재명 보기</button>
+    <div id="sugBox" class="panelbox"><div id="g_sug" class="chips"></div></div>
   </div>
 </main>
-</div>
+
+<div class="dock"><div class="dockin">
+  <div class="striplab">결과 미리보기</div>
+  <div id="pv" class="preview"></div>
+  <button id="go" class="apply"><span id="goline" class="goline">이대로 바꾸기 <span class="arr">→</span></span></button>
+</div></div>
 
 <div id="toast" class="toast"></div>
 <div class="dropmask">파일을 여기에 놓으세요</div>
 <a id="install" class="installLink" href="#">앱으로 설치하기</a>
 
 <script>
+/* ===== Supabase (소재명 공유 저장) ===== */
+const SB_URL="https://newoydegfbnnqujgiips.supabase.co";
+const SB_KEY="sb_publishable_6remFFz9oGKffdlRakvdfg_OOLp6zYL";
+const SB_TBL=SB_URL+"/rest/v1/creative_names";
+const SB_H={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
+
 const SERVICES=[{l:"중고거래",v:"fleamarket",a:"Fl"},{l:"알바",v:"jobs",a:"Jo"},{l:"모임",v:"group",a:"Gr"},{l:"부동산",v:"realty",a:"Rt"},{l:"중고차",v:"car",a:"Ca"},{l:"비즈니스",v:"LocalAds",a:"Ad"}];
 const ABBR=Object.fromEntries(SERVICES.map(s=>[s.v,s.a]));
 try{const _cs=JSON.parse(localStorage.getItem("namepresso_svcs"));if(Array.isArray(_cs))_cs.forEach(v=>{if(!SERVICES.some(s=>s.v===v))SERVICES.push({l:v,v:v});});}catch(e){}
@@ -217,9 +200,8 @@ const PK="namepresso_prefixes";
 const sel={division:"maugrowth",service:"fleamarket",series:null};
 let abbrev=false, files=[];
 
-/* ===== 네이티브(Tauri) 브리지 =====
-   window.__TAURI__ 가 있으면 윈도우 네이티브 앱으로 동작(파일 I/O를 Rust가 처리 → 확인창 0회).
-   없으면 기존 웹(File System Access API) 경로 그대로 사용. */
+/* ===== 네이티브(Tauri) 브리지 — 설치형 앱이면 파일 I/O를 Rust가 처리(확인창 0회).
+   브라우저(사이트)면 window.__TAURI__ 가 없어 기존 웹 경로(File System Access + Supabase)를 그대로 사용 ===== */
 const NATIVE = !!(window.__TAURI__ && window.__TAURI__.core);
 const T = NATIVE ? window.__TAURI__ : null;
 const nInvoke = (cmd,args)=>T.core.invoke(cmd,args);
@@ -236,9 +218,30 @@ function loadMats(){try{const a=JSON.parse(localStorage.getItem(MK));if(Array.is
   localStorage.setItem(MK,JSON.stringify(seed));return seed;}
 function saveMats(){try{localStorage.setItem(MK,JSON.stringify(MATS));}catch(e){}}
 let MATS=loadMats();
+
+/* Supabase: 활성 목록 불러오기 → 로컬 캐시 갱신 후 다시 그림 */
+async function pullMats(){
+  try{
+    const r=await fetch(SB_TBL+"?active=eq.true&select=name,service,series,division&order=updated_at.desc",{headers:SB_H});
+    if(!r.ok)return;
+    const rows=await r.json();
+    if(!Array.isArray(rows))return;
+    MATS=rows.map(x=>{const o={n:x.name};if(x.service)o.service=x.service;if(x.series)o.series=x.series;if(x.division!=null)o.division=x.division;return o;});
+    saveMats();renderSug();
+  }catch(e){}
+}
+/* Supabase: 추가/갱신(업서트) */
+function pushMat(rec){
+  const body={name:rec.n,name_key:rec.n.toLowerCase(),service:rec.service||null,series:rec.series||null,division:(rec.division!=null?rec.division:null),active:true,updated_at:new Date().toISOString()};
+  fetch(SB_TBL+"?on_conflict=name_key",{method:"POST",headers:Object.assign({"Prefer":"resolution=merge-duplicates,return=minimal"},SB_H),body:JSON.stringify(body)}).catch(()=>{});
+}
+/* Supabase: 소프트 삭제(목록에서 숨김, DB에는 active=false로 남김) */
+function softDeleteMat(name){
+  fetch(SB_TBL+"?name_key=eq."+encodeURIComponent(name.toLowerCase()),{method:"PATCH",headers:Object.assign({"Prefer":"return=minimal"},SB_H),body:JSON.stringify({active:false,updated_at:new Date().toISOString()})}).catch(()=>{});
+}
 function addMat(n){n=(n||"").trim();if(!n)return;const rec={n:n};if(sel.service)rec.service=sel.service;rec.division=sel.division;if(sel.series)rec.series=sel.series;
   const i=MATS.findIndex(m=>m.n.toLowerCase()===n.toLowerCase());if(i>=0)MATS[i]=rec;else MATS.unshift(rec);saveMats();
-  if(NATIVE){const nrec=Object.assign({},rec);try{nrec.ts=new Date().toISOString().slice(0,10);}catch(e){}nInvoke("add_material",{rec:nrec}).catch(()=>{});}}
+  if(NATIVE){const nr=Object.assign({},rec);try{nr.ts=new Date().toISOString().slice(0,10);}catch(e){}nInvoke("add_material",{rec:nr}).catch(()=>{});}else{pushMat(rec);}}
 function svcTok(){return sel.service?(abbrev?(ABBR[sel.service]||sel.service):sel.service):"";}
 function camel(s){const p=s.trim().split(/[\s_]+/).filter(Boolean);if(p.length<=1)return s.trim();return p[0].charAt(0).toLowerCase()+p[0].slice(1)+p.slice(1).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join("");}
 function matTok(){const m=$("mat").value.trim();if(!m)return"";return sel.series?`${sel.series}-${m}`:m;}
@@ -306,12 +309,12 @@ function pill(){const p=$("pill");if(sel.series){p.style.display="inline-flex";$
 $("pillx").onclick=()=>{sel.series=null;renderSer();pill();refresh();};
 function renderSug(){const box=$("g_sug");box.innerHTML="";MATS.forEach((it,i)=>{const b=document.createElement("button");b.className="chip sug";b.innerHTML=`${it.n}<span class="rx">✕</span>`;
   b.onclick=()=>{$("mat").value=it.n;if(it.service){sel.service=it.service;$("g_svc")._r();}if(Object.prototype.hasOwnProperty.call(it,"division")){sel.division=it.division;$("g_div")._r();}if(it.series){if(!PREFIXES.includes(it.series)){PREFIXES.push(it.series);saveP(PREFIXES);}sel.series=it.series;$("serBox").classList.add("open");$("serT").classList.add("on");}else{sel.series=null;}renderSer();pill();refresh();};
-  b.querySelector(".rx").onclick=(e)=>{e.stopPropagation();MATS.splice(i,1);saveMats();renderSug();};
+  b.querySelector(".rx").onclick=(e)=>{e.stopPropagation();const nm=MATS[i].n;MATS.splice(i,1);saveMats();renderSug();if(!NATIVE)softDeleteMat(nm);};
   box.appendChild(b);});}
 $("serT").onclick=()=>{const o=$("serBox").classList.toggle("open");$("serT").classList.toggle("on",o);};
 $("serT").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("serT").onclick();}};
 $("sugT").onclick=()=>{const o=$("sugBox").classList.toggle("open");$("sugT").textContent=o?"▾ 기존 소재명 숨기기":"▸ 기존 소재명 보기";
-  if(o){requestAnimationFrame(()=>{try{$("sugBox").scrollIntoView({behavior:"smooth",block:"end"});}catch(e){try{$("sugBox").scrollIntoView();}catch(_){}}});}};
+  if(o){requestAnimationFrame(()=>{try{$("sugBox").scrollIntoView({behavior:"smooth",block:"end"});}catch(e){}});}};
 $("abbr").onclick=()=>{abbrev=!abbrev;$("abbr").classList.toggle("on",abbrev);refresh();};
 $("abbr").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("abbr").onclick();}};
 
@@ -330,10 +333,8 @@ function refresh(){
 }
 let filesOpen=false;
 function applyFilesOpen(){
-  const n=files.length;
-  $("filePanel").classList.toggle("open", filesOpen && n>0);
-  $("fileToggle").textContent=(n?((filesOpen?"▾ ":"▸ ")):"")+"파일명 일괄 변경기"+(n?" ("+n+")":"");
-  const hint=$("fileHint");if(hint)hint.style.display=(NATIVE&&n===0)?"block":"none";
+  $("fileList").style.display=(filesOpen&&files.length)?"block":"none";
+  $("filesT").textContent=(files.length?(filesOpen?"▾ ":"▸ "):"")+"선택된 파일 "+files.length;
 }
 function renderFiles(){
   const box=$("fileList");
@@ -344,7 +345,7 @@ function renderFiles(){
   } else { box.innerHTML=""; $("clr").style.display="none"; filesOpen=false; }
   applyFilesOpen();
 }
-$("fileToggle").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
+$("filesT").onclick=()=>{ if(!files.length)return; filesOpen=!filesOpen; applyFilesOpen(); };
 $("clr").onclick=()=>{files=[];renderFiles();refresh();};
 
 /* ===== File System Access API ===== */
@@ -500,56 +501,39 @@ if(NATIVE){setupNativeDrop();}else{setupDrop();}
 
 if(NATIVE){
   document.body.classList.add("native");
-  /* 화면 해상도를 감안한 창 크기 보정: 기본 460x680, 작은 화면이면 작업영역에 맞춰 축소 후 가운데 정렬.
-     (Tauri는 논리 픽셀 기준이라 고해상도에서도 흐릿해지지 않음) */
+  /* 화면 크기를 감안한 창 보정 (기본 460x680) */
   try{
     const W=T.window&&T.window.getCurrentWindow&&T.window.getCurrentWindow();
     const LS=T.window&&T.window.LogicalSize;
-    if(W&&LS){
-      const m=60,aw=(self.screen&&screen.availWidth)||1280,ah=(self.screen&&screen.availHeight)||720;
+    if(W&&LS){const m=60,aw=(self.screen&&screen.availWidth)||1280,ah=(self.screen&&screen.availHeight)||720;
       const w=Math.max(360,Math.min(460,aw-m)),h=Math.max(520,Math.min(680,ah-m));
-      W.setSize(new LS(w,h)).then(()=>{if(W.center)W.center();}).catch(()=>{});
-    }
+      W.setSize(new LS(w,h)).then(()=>{if(W.center)W.center();}).catch(()=>{});}
   }catch(e){}
-  /* 헤더 링크: 📌 상단고정 토글 · 소재폴더(열기) · 내보내기(공유파일 생성) */
+  /* 헤더 링크: 📌 상단고정 · 소재폴더(열기) · 내보내기(공유 파일) */
   const gc=$("grantCustom");
   if(gc){
-    const wrap=document.createElement("span");
-    wrap.style.cssText="display:flex;gap:10px;align-items:center;";
+    const wrap=document.createElement("span");wrap.style.cssText="display:flex;gap:10px;align-items:center;";
     gc.parentNode.insertBefore(wrap,gc);
-
-    /* 상단 고정 / 해제 */
-    const pin=document.createElement("a");
-    pin.className="perm";pin.textContent="📌 고정";pin.title="이 창을 항상 맨 위에 두기";
-    let pinned=false;
-    pin.onclick=async()=>{pinned=!pinned;try{await T.window.getCurrentWindow().setAlwaysOnTop(pinned);}catch(e){}
-      pin.classList.toggle("on",pinned);pin.textContent=pinned?"📌 고정됨":"📌 고정";toast(pinned?"창을 맨 위에 고정했어요":"고정을 해제했어요");};
+    const pin=document.createElement("a");pin.className="perm";pin.textContent="📌 고정";pin.title="창을 항상 맨 위에 두기";
+    let pinned=false;pin.onclick=async()=>{pinned=!pinned;try{await T.window.getCurrentWindow().setAlwaysOnTop(pinned);}catch(e){}pin.classList.toggle("on",pinned);pin.textContent=pinned?"📌 고정됨":"📌 고정";toast(pinned?"창을 맨 위에 고정했어요":"고정을 해제했어요");};
     wrap.appendChild(pin);
-
-    /* 소재 폴더 열기 (받은 파일을 inbox에 넣거나 둘러볼 때) */
-    gc.textContent="소재폴더";gc.title="소재명 저장 폴더 열기";
-    gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};
-    wrap.appendChild(gc);
-
-    /* 내보내기: 공유용 복사본을 만들고, 그 파일을 탐색기에서 선택해 보여줌 */
-    const exp=document.createElement("a");
-    exp.className="perm";exp.textContent="내보내기";exp.title="소재명 목록을 공유용 파일로 내보내기";
-    exp.onclick=async()=>{try{const fn="소재목록_"+ymm()+".jsonl";const p=await nInvoke("export_materials",{filename:fn});toast("공유용 파일을 만들었어요: "+fn);if(p)nInvoke("reveal_in_folder",{path:p}).catch(()=>{});}catch(e){toast("내보내기 실패");}};
+    gc.textContent="소재폴더";gc.title="소재명 저장 폴더 열기";gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};wrap.appendChild(gc);
+    const exp=document.createElement("a");exp.className="perm";exp.textContent="내보내기";exp.title="소재명 목록을 공유 파일로 내보내기";
+    exp.onclick=async()=>{try{const fn="소재목록_"+ymm()+".jsonl";const path=await nInvoke("export_materials",{filename:fn});toast("공유용 파일을 만들었어요: "+fn);if(path)nInvoke("reveal_in_folder",{path:path}).catch(()=>{});}catch(e){toast("내보내기 실패");}};
     wrap.appendChild(exp);
   }
-  /* 파일 기반 소재명 DB 로드 (+ 최초 1회 localStorage 이전, inbox 자동 병합은 Rust가 처리) */
-  (async()=>{
-    try{
-      let arr=await nInvoke("load_materials");
-      if((!Array.isArray(arr)||!arr.length)&&Array.isArray(MATS)&&MATS.length){
-        for(const m of MATS){const rec=Object.assign({},m);try{rec.ts=new Date().toISOString().slice(0,10);}catch(e){}await nInvoke("add_material",{rec:rec}).catch(()=>{});}
-        arr=await nInvoke("load_materials");
-      }
-      if(Array.isArray(arr)&&arr.length){MATS=arr;renderSug();}
-    }catch(e){}
-  })();
+  /* 파일 기반 소재명 DB 로드 (+ 최초 1회 이전; inbox 자동 병합은 Rust가 처리). 네이티브는 Supabase 미사용. */
+  (async()=>{try{
+    let arr=await nInvoke("load_materials");
+    if((!Array.isArray(arr)||!arr.length)&&Array.isArray(MATS)&&MATS.length){
+      for(const m of MATS){const rec=Object.assign({},m);try{rec.ts=new Date().toISOString().slice(0,10);}catch(e){}await nInvoke("add_material",{rec:rec}).catch(()=>{});}
+      arr=await nInvoke("load_materials");
+    }
+    if(Array.isArray(arr)&&arr.length){MATS=arr;renderSug();}
+  }catch(e){}})();
 }else{
   (async()=>{try{await loadGrantedDirs();}catch(e){}})();
+  pullMats();
 }
 
 /* ===== PWA: 설치 + 서비스워커 ===== */
@@ -557,6 +541,8 @@ if(!NATIVE && "serviceWorker" in navigator){window.addEventListener("load",()=>{
 let deferredPrompt=null;
 const installEl=$("install");
 const standalone=window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches;
+/* 앱(설치형)으로 처음 열 때만 권장 크기로 — 여백 최소 + 스크롤 없음. 이후엔 사용자가 조절한 크기 유지 */
+if(!NATIVE && standalone){try{if(!localStorage.getItem("namepresso_sized")){window.resizeTo(480,700);localStorage.setItem("namepresso_sized","1");}}catch(e){}}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;if(!standalone)installEl.style.display="block";});
 installEl.onclick=async(ev)=>{ev.preventDefault();if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(_){}deferredPrompt=null;installEl.style.display="none";};
 window.addEventListener("appinstalled",()=>{installEl.style.display="none";deferredPrompt=null;});
