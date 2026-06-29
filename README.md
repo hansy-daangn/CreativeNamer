@@ -1,27 +1,25 @@
-# 파일명 일괄 변경기 (Creative Namer)
-파일을 창에 드래그하면 이름을 바꿔줘요: 네이밍 컨벤션(`타입_구분_서비스_소재명_해상도_YYMM`)
+# 파일을 드래그해서 추가하고, 이름을 바꿔요
 
-- [**브라우저**](https://hansy-daangn.github.io/CreativeNamer/), [**윈도우**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe), [**맥OS**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg)를 지원하며, 로컬로만 구동되어 보안성과 작업 속도를 극대화해요.
+- [**웹사이트**](https://hansy-daangn.github.io/CreativeNamer/), [**윈도우**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe), [**맥OS**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg)를 지원하며, 로컬로만 구동되어 보안성과 작업 속도를 극대화해요.
 - 브라우저는 링크만 알면 사용할 수 있지만, 보안정책상 파일명을 바꿀때마다 확인을 눌러줘야 해요.
-- 윈도우는 [**무설치 실행파일**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe)로도 사용할 수 있어요.
 
+
+<br />
 
 ## 사용하기
+1. 파일을 창에 드래그하고, 바꾸기 버튼을 눌러요.
+2. 구분 · 서비스 · 소재명을 지정해요. 시리즈 소재의 경우, 접두어를 추가할 수 있어요. (ex: promo-spring)
+<br /><br />
+> 네이밍 컨벤션(`타입_구분_서비스_소재명_해상도_YYMM`)
 
-1. 파일을 창에 드래그해요.
-2. 구분 · 서비스 · 소재명을 지정해요. 시리즈 소재의 경우, 접두어를 추가할 수 있어요.
-3. `바꾸기`버튼을 클릭하면, 일괄 적용돼요.
-
-생성 규칙: `타입_구분_서비스_소재명_해상도_YYMM.확장자` — 빈 항목은 생략되며 소재명은 필수다.
-
-
+<br />
+<details><summary>상세 정보</summary>
+  
 ## 특징
-
+- 윈도우는 [**윈도우 무설치**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe)로도 사용할 수 있어요.
 - 소재명은 자동으로 저장돼요: 웹은 Supabase서버 동기화, 데스크톱은 파일 기반 저장/공유.
 - 이미지·영상 해상도를 헤더 파싱으로 자동 입력(mp4·mov·webp·heic 등).
 
-
-<details><summary>상세 정보</summary>
 
 ## 동작 방식
 
