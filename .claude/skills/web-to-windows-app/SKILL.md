@@ -177,7 +177,7 @@ const nInvoke = (cmd,args)=>T.core.invoke(cmd,args);
 - **창 꽉 채움**: `body.native`에서 `.card`가 창 전체를 채움(여백/이중 스크롤/이중 리사이즈 제거). 기본 460x680 + 해상도 보정 + center.
 - **상단 고정 토글**: 헤더에 📌 링크 → `T.window.getCurrentWindow().setAlwaysOnTop(bool)` 토글(`.perm.on` 강조).
 - **제목 = 파일 토글**: `+파일선택` 드롭박스 영역 제거(네이티브). 제목 버튼이 `[ ▸ 파일명 일괄 변경기 (N) ]`로 파일 개수 표시 + 클릭 시 목록 패널 토글. 파일 0개면 점선 드래그 안내(`#fileHint`) 표시. 파일명은 가로 스크롤 없이 전체 너비 + ellipsis.
-- **소재폴더 vs 내보내기 구분**: `소재폴더`=폴더 열기(`open_data_folder`), `내보내기`=공유파일 생성 후 그 파일을 선택해 보여줌(`reveal_in_folder` = `explorer /select,<path>`). 같은 동작 중복 금지.
+- **⚙ vs 내보내기 vs 가져오기 구분**: `⚙`=데이터 폴더 열기(`open_data_folder`), `내보내기`=공유파일 생성(`reveal_in_folder` = `explorer /select,<path>`) + Supabase 전체 업서트(`pushAllMats`), `가져오기`=Supabase 최신 활성 목록을 파일 DB에 병합 후 다시 그림(`pullMatsNative`). 같은 동작 중복 금지.
 - **폴더 안내문**: `ensure_dirs`가 데이터 폴더에 `사용법.txt`(한글 설명)를 1회 생성.
 - **기존 소재명 보기 자동 스크롤**: `#sugT`로 열 때 `scrollIntoView({block:'end'})`로 목록까지 자동 스크롤.
 - 새 Rust 커맨드는 `generate_handler!`에 반드시 등록(`reveal_in_folder` 포함).
