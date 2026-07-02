@@ -1,0 +1,13 @@
+{
+  "name": "CreativeNamer",
+  "id": "creativenamer-figma-plugin",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["https://newoydegfbnnqujgiips.supabase.co"],
+    "reasoning": "소재명(파일 이름) 목록을 팀과 공유하기 위해 Supabase에서 불러오고 저장합니다. 네트워크가 없어도 플러그인은 그대로 동작합니다."
+  }
+}

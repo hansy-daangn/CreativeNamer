@@ -1,7 +1,21 @@
 # 파일을 드래그해서 추가하고, 이름을 바꿔요
 
-- [**웹사이트**](https://hansy-daangn.github.io/CreativeNamer/), [**윈도우**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe), [**맥OS**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg)를 지원하며, 로컬로만 구동되어 보안성과 작업 속도를 극대화해요.
+- [**웹사이트**](https://hansy-daangn.github.io/CreativeNamer/), [**윈도우**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe), [**맥OS**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg), [**Figma 플러그인**](./figma-plugin)을 지원하며, 로컬로만 구동되어 보안성과 작업 속도를 극대화해요.
 - 브라우저는 링크만 알면 사용할 수 있지만, 보안정책상 파일명을 바꿀때마다 확인을 눌러줘야 해요.
+
+
+<br />
+
+## Figma 플러그인
+
+피그마에서 선택한 프레임 이름을 웹과 **동일한 규칙**(`img_구분_서비스_소재명_해상도_YYMM`)으로 한 번에 바꿔요. 소재명 목록은 웹·데스크톱과 같은 Supabase DB를 공유해요.
+
+**다운로드 & 설치**
+1. [`figma-plugin` 폴더](./figma-plugin)의 파일(`manifest.json`, `code.js`, `ui.html`)을 내려받아요. (저장소를 `git clone` 하거나 [ZIP 다운로드](https://github.com/hansy-daangn/CreativeNamer/archive/refs/heads/claude/charming-wright-pj3zxd.zip) 후 `figma-plugin` 폴더만 사용)
+2. Figma 데스크톱 앱에서 **메뉴 → Plugins → Development → Import plugin from manifest…** 를 눌러요.
+3. 내려받은 `figma-plugin/manifest.json` 을 선택하면 끝. 이후 **Plugins → Development → CreativeNamer** 로 실행해요.
+
+> 사용법: 프레임을 선택 → 구분·서비스·소재명을 지정 → **이대로 바꾸기**. 해상도(가로x세로)와 연월은 자동으로 붙고, 이름이 겹치면 `_v2`, `_v3` … 이 붙어요.
 
 
 <br />
