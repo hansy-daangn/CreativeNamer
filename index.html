@@ -242,6 +242,27 @@ function pushMat(rec){
 function softDeleteMat(name){
   fetch(SB_TBL+"?name_key=eq."+encodeURIComponent(name.toLowerCase()),{method:"PATCH",headers:Object.assign({"Prefer":"return=minimal"},SB_H),body:JSON.stringify({active:false,updated_at:new Date().toISOString()})}).catch(()=>{});
 }
+/* Supabase: 현재 소재명 전체를 한 번에 업서트(내보내기 시 서버 동기화). name_key 중복 제거 후 전송 */
+async function pushAllMats(){
+  const seen={},rows=[];const now=new Date().toISOString();
+  for(const rec of MATS){const k=(rec.n||"").toLowerCase();if(!k||seen[k])continue;seen[k]=1;
+    rows.push({name:rec.n,name_key:k,service:rec.service||null,series:rec.series||null,division:(rec.division!=null?rec.division:null),active:true,updated_at:now});}
+  if(!rows.length)return true;
+  try{const r=await fetch(SB_TBL+"?on_conflict=name_key",{method:"POST",headers:Object.assign({"Prefer":"resolution=merge-duplicates,return=minimal"},SB_H),body:JSON.stringify(rows)});return r.ok;}catch(e){return false;}
+}
+/* Supabase: 최신 활성 목록을 가져와 네이티브 파일 DB에 병합 저장 후 다시 그림 */
+async function pullMatsNative(){
+  try{
+    const r=await fetch(SB_TBL+"?active=eq.true&select=name,service,series,division&order=updated_at.desc",{headers:SB_H});
+    if(!r.ok)return false;
+    const rows=await r.json();if(!Array.isArray(rows))return false;
+    const incoming=rows.map(x=>{const o={n:x.name};if(x.service)o.service=x.service;if(x.series)o.series=x.series;if(x.division!=null)o.division=x.division;return o;});
+    for(const rec of incoming){const nr=Object.assign({},rec);try{nr.ts=new Date().toISOString().slice(0,10);}catch(e){}await nInvoke("add_material",{rec:nr}).catch(()=>{});}
+    let arr=[];try{arr=await nInvoke("load_materials");}catch(e){}
+    MATS=(Array.isArray(arr)&&arr.length)?arr:incoming;saveMats();renderSug();
+    return true;
+  }catch(e){return false;}
+}
 function addMat(n){n=(n||"").trim();if(!n)return;const rec={n:n};if(sel.service)rec.service=sel.service;rec.division=sel.division;if(sel.series)rec.series=sel.series;
   const i=MATS.findIndex(m=>m.n.toLowerCase()===n.toLowerCase());if(i>=0)MATS[i]=rec;else MATS.unshift(rec);saveMats();
   if(NATIVE){const nr=Object.assign({},rec);try{nr.ts=new Date().toISOString().slice(0,10);}catch(e){}nInvoke("add_material",{rec:nr}).catch(()=>{});}else{pushMat(rec);}}
@@ -324,7 +345,7 @@ $("abbr").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("a
 function build(v){return ORDER.map(k=>(v[k]||"").trim()).filter(Boolean).join("_");}
 function plans(){const mat=matTok(),out=[],used={};const useM=!!($("dateMtime")&&$("dateMtime").checked);
   files.forEach(f=>{const date=(useM&&f.mtime)?ymmFrom(f.mtime):ymm();const vals={type:typeFor(f.name),division:sel.division||"",service:svcTok(),material:mat,resolution:f.res||"",date};
-    const ext=extOf(f.name);let c=build(vals)+ext,d=2;while(used[c.toLowerCase()]){c=build(vals)+"_dup"+d+ext;d++;}used[c.toLowerCase()]=1;out.push({handle:f.handle,path:f.path,from:f.name,to:c});});
+    const ext=extOf(f.name);let c=build(vals)+ext,d=2;while(used[c.toLowerCase()]){c=build(vals)+"_v"+d+ext;d++;}used[c.toLowerCase()]=1;out.push({handle:f.handle,path:f.path,from:f.name,to:c});});
   return out;}
 function refresh(){
   let t;
@@ -512,15 +533,18 @@ if(NATIVE){
       const w=Math.max(360,Math.min(460,aw-m)),h=Math.max(520,Math.min(650,ah-m));
       W.setSize(new LS(w,h)).then(()=>{if(W.center)W.center();}).catch(()=>{});}
   }catch(e){}
-  /* 헤더 링크: 소재폴더(열기) · 내보내기(공유 파일) */
+  /* 헤더 링크: ⚙(폴더 열기) · 내보내기(공유 파일 + 서버 동기화) · 가져오기(서버 최신본) */
   const gc=$("grantCustom");
   if(gc){
     const wrap=document.createElement("span");wrap.style.cssText="display:flex;gap:10px;align-items:center;";
     gc.parentNode.insertBefore(wrap,gc);
-    gc.textContent="소재폴더";gc.title="소재명 저장 폴더 열기";gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};wrap.appendChild(gc);
-    const exp=document.createElement("a");exp.className="perm";exp.textContent="내보내기";exp.title="소재명 목록을 공유 파일로 내보내기";
-    exp.onclick=async()=>{try{const fn="소재목록_"+ymm()+".jsonl";const path=await nInvoke("export_materials",{filename:fn});toast("공유용 파일을 만들었어요: "+fn);if(path)nInvoke("reveal_in_folder",{path:path}).catch(()=>{});}catch(e){toast("내보내기 실패");}};
+    gc.textContent="⚙";gc.title="소재명 저장 폴더 열기";gc.style.fontSize="16px";gc.onclick=()=>{nInvoke("open_data_folder").catch(()=>{});};wrap.appendChild(gc);
+    const exp=document.createElement("a");exp.className="perm";exp.textContent="내보내기";exp.title="공유 파일로 내보내고 서버에도 동기화";
+    exp.onclick=async()=>{const o=exp.textContent;exp.textContent="내보내는 중…";try{const fn="소재목록_"+ymm()+".jsonl";const path=await nInvoke("export_materials",{filename:fn});const synced=await pushAllMats();toast(synced?"내보내기 완료 · 서버에도 동기화했어요":"공유 파일은 만들었지만 서버 동기화에 실패했어요");if(path)nInvoke("reveal_in_folder",{path:path}).catch(()=>{});}catch(e){toast("내보내기 실패");}exp.textContent=o;};
     wrap.appendChild(exp);
+    const imp=document.createElement("a");imp.className="perm";imp.textContent="가져오기";imp.title="서버에서 최신 소재명 가져오기";
+    imp.onclick=async()=>{const o=imp.textContent;imp.textContent="가져오는 중…";const ok=await pullMatsNative();imp.textContent=o;toast(ok?"서버에서 최신 목록을 가져왔어요":"가져오기에 실패했어요");};
+    wrap.appendChild(imp);
   }
   /* 파일 기반 소재명 DB 로드 (+ 최초 1회 이전; inbox 자동 병합은 Rust가 처리). 네이티브는 Supabase 미사용. */
   (async()=>{try{
