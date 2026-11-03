@@ -1,5 +1,7 @@
 # 파일을 드래그해서 추가하고, 이름을 바꿔요
 
+> **네이밍 규칙도 여기서 관리해요.** 사이트의 **네이밍 규칙** 탭에서 항목 순서·이름·값·약어를 바꾸고 저장하면, 웹·윈도우·맥·Figma 플러그인 모두 바로 같은 규칙을 써요. 저장할 때마다 이력이 남아서 언제든 되돌릴 수 있어요. ([규칙 바로가기](https://hansy-daangn.github.io/CreativeNamer/#rules))
+
 - [**웹사이트**](https://hansy-daangn.github.io/CreativeNamer/), [**윈도우**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Setup.exe), [**맥OS**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer.dmg), [**Figma 플러그인**](./figma-plugin)을 지원하며, 로컬로만 구동되어 보안성과 작업 속도를 극대화해요.
 - 브라우저는 링크만 알면 사용할 수 있지만, 보안정책상 파일명을 바꿀때마다 확인을 눌러줘야 해요.
 
@@ -8,7 +10,7 @@
 
 ## Figma 플러그인
 
-피그마에서 선택한 프레임 이름을 웹과 **동일한 규칙**(`image_구분_서비스_소재명_해상도_YYMM`)으로 한 번에 바꿔요. 소재명 목록은 웹·데스크톱과 같은 Supabase DB를 공유해요.
+피그마에서 선택한 프레임 이름을 웹과 **동일한 규칙**(서버에 저장된 최신 네이밍 규칙)으로 한 번에 바꿔요. 규칙과 소재명 목록은 웹·데스크톱과 같은 Supabase DB를 공유해요. 플러그인의 **규칙 편집 ↗** 을 누르면 웹의 규칙 탭이 열려요.
 
 **다운로드 & 설치**
 1. [`figma-plugin` 폴더](./figma-plugin)의 파일(`manifest.json`, `code.js`, `ui.html`)을 내려받아요. (저장소를 `git clone` 하거나 [ZIP 다운로드](https://github.com/hansy-daangn/CreativeNamer/archive/refs/heads/claude/charming-wright-pj3zxd.zip) 후 `figma-plugin` 폴더만 사용)
@@ -24,13 +26,14 @@
 1. 파일을 창에 드래그하고, 바꾸기 버튼을 눌러요.
 2. 구분 · 서비스 · 소재명을 지정해요. 시리즈 소재의 경우, 접두어를 추가할 수 있어요. (ex: promo-spring)
 <br /><br />
-> 네이밍 컨벤션(`타입_구분_서비스_소재명_해상도_YYMM`)
+> 기본 네이밍 컨벤션: `유형_구분_서비스_소재명_해상도_YYMM` (예: `image_maugrowth_fleamarket_keyword-spring_1080x1080_2611.png`) — **네이밍 규칙** 탭에서 언제든 바꿀 수 있어요.
 
 <br />
 <details><summary>상세 정보</summary>
   
 ## 특징
 - 윈도우는 [**윈도우 무설치**](https://github.com/hansy-daangn/CreativeNamer/releases/latest/download/CreativeNamer-Run.exe)로도 사용할 수 있어요.
+- 네이밍 규칙은 Supabase `naming_rules` 테이블에 저장돼요. 가장 최근 행이 현재 규칙이고, 이전 행은 이력이에요. 앱은 시작할 때·창으로 돌아올 때·30초마다 최신 규칙을 확인해요. 서버에 연결할 수 없으면 마지막으로 받은 규칙으로 동작해요.
 - 소재명은 자동으로 저장돼요: 웹은 Supabase서버 동기화, 데스크톱은 파일 기반 저장/공유.
 - 이미지·영상 해상도를 헤더 파싱으로 자동 입력(mp4·mov·webp·heic 등).
 
