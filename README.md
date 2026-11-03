@@ -8,7 +8,7 @@
 
 ## Figma 플러그인
 
-피그마에서 선택한 프레임 이름을 웹과 **동일한 규칙**(`img_구분_서비스_소재명_해상도_YYMM`)으로 한 번에 바꿔요. 소재명 목록은 웹·데스크톱과 같은 Supabase DB를 공유해요.
+피그마에서 선택한 프레임 이름을 웹과 **동일한 규칙**(`image_구분_서비스_소재명_해상도_YYMM`)으로 한 번에 바꿔요. 소재명 목록은 웹·데스크톱과 같은 Supabase DB를 공유해요.
 
 **다운로드 & 설치**
 1. [`figma-plugin` 폴더](./figma-plugin)의 파일(`manifest.json`, `code.js`, `ui.html`)을 내려받아요. (저장소를 `git clone` 하거나 [ZIP 다운로드](https://github.com/hansy-daangn/CreativeNamer/archive/refs/heads/claude/charming-wright-pj3zxd.zip) 후 `figma-plugin` 폴더만 사용)
