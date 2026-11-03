@@ -3,11 +3,11 @@
 웹 '파일명 일괄 변경기'와 **동일한 규칙**으로 선택한 프레임 이름을 한 번에 바꿉니다.
 
 ```
-img_{구분}_{서비스}_{소재명}_{가로x세로}_{YYMM}
-예) img_maugrowth_fleamarket_keyword-spring_1080x1080_2607
+image_{구분}_{서비스}_{소재명}_{가로x세로}_{YYMM}
+예) image_maugrowth_fleamarket_keyword-spring_1080x1080_2607
 ```
 
-- `type` : 항상 `img` (피그마 프레임 = 이미지 소재)
+- `type` : 항상 `image` (피그마 프레임 = 이미지 소재)
 - `구분(division)` : 기본 `maugrowth`, 직접 추가 가능
 - `서비스(service)` : 중고거래/알바/모임/부동산/중고차/비즈니스 + '짧게 표기해요' 옵션(예: `fleamarket`→`Fl`)
 - `소재명(material)` : 자유 입력. '시리즈 소재예요'를 켜면 접두어(`promo`, `keyword` …)를 붙일 수 있어요 (`keyword-spring`)

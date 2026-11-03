@@ -194,7 +194,7 @@ function saveDiv(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_divs
 function delDiv(v){let c;try{c=JSON.parse(localStorage.getItem("namepresso_divs"))||[];}catch(e){c=[];}c=c.filter(x=>x!==v);localStorage.setItem("namepresso_divs",JSON.stringify(c));}
 const VIDEO=["mp4","mov","avi","wmv","mkv","flv","avchd","mxf","m4v","webm","mpg","mpeg","m2ts","ts"];
 const IMAGE=["jpg","jpeg","png","gif","ai","svg","tif","tiff","raw","heif","heic","psd","pdf","eps","bmp","ico","tga","dng","webp"];
-function typeFor(n){const e=(n.split(".").pop()||"").toLowerCase();if(VIDEO.includes(e))return"vdo";if(IMAGE.includes(e))return"img";return"";}
+function typeFor(n){const e=(n.split(".").pop()||"").toLowerCase();if(VIDEO.includes(e))return"video";if(IMAGE.includes(e))return"image";return"";}
 function extOf(n){const i=n.lastIndexOf(".");return i>0?n.slice(i):"";}
 const SUG=[{n:"catalogBlack"},{n:"rent",series:"promo",service:"realty"},{n:"spring",series:"keyword",service:"fleamarket"},{n:"summer",series:"keyword",service:"fleamarket"},{n:"fall",series:"keyword",service:"fleamarket"},{n:"winter",series:"keyword",service:"fleamarket"},{n:"newYear"},{n:"newyearBogum"},{n:"santa",series:"shortForm",service:"jobs"},{n:"staff",series:"shortForm",service:"jobs"},{n:"closet",service:"fleamarket"},{n:"findhome",service:"realty"},{n:"cafejobs",service:"jobs"},{n:"Review",service:"LocalAds"},{n:"potatoGroup",service:"group"},{n:"boomup"},{n:"variation"},{n:"BizAwards",service:"LocalAds"},{n:"NoCommission",service:"fleamarket"}];
 const ORDER=["type","division","service","material","resolution","date"];
@@ -349,7 +349,7 @@ function plans(){const mat=matTok(),out=[],used={};const useM=!!($("dateMtime")&
   return out;}
 function refresh(){
   let t;
-  if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"img",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()});}
+  if(files.length){t=plans().map(x=>x.to).join("\n");}else{t=build({type:"image",division:sel.division||"",service:svcTok(),material:matTok(),resolution:"〈해상도〉",date:ymm()});}
   $("pv").textContent=t;
   $("goline").innerHTML='이대로 바꾸기 <span class="arr">→</span>';$("goline").classList.remove("gw");
   $("go").disabled=!SUPPORTED;

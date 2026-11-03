@@ -2,8 +2,8 @@
 // CreativeNamer — Figma Plugin (main thread)
 //
 // 웹 '파일명 일괄 변경기'와 동일한 규칙으로 선택한 프레임 이름을 바꿉니다.
-//   img_{division}_{service}_{material}_{WxH}_{YYMM}
-//   - type       : 항상 img (피그마 프레임 = 이미지 소재)
+//   image_{division}_{service}_{material}_{WxH}_{YYMM}
+//   - type       : 항상 image (피그마 프레임 = 이미지 소재)
 //   - division   : 구분 (기본 maugrowth)
 //   - service    : 서비스 (짧게 표기 옵션 지원)
 //   - material   : 소재명 (시리즈 접두어 옵션 지원)
@@ -68,7 +68,7 @@ figma.ui.onmessage = async function (msg) {
     for (var i = 0; i < t.length; i++) {
       var n = t[i];
       var vals = {
-        type: p.type || "img",
+        type: p.type || "image",
         division: p.division || "",
         service: p.service || "",
         material: p.material || "",
